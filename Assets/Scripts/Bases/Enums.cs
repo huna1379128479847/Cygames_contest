@@ -17,6 +17,7 @@ namespace Contest
     //そのユニットの種別を示す
     public enum UnitType
     {
+        None,//なし
         Friend,//味方
         Enemy,//敵
         FriendAI,//味方AI
@@ -30,5 +31,8 @@ namespace Contest
         Enemy,//敵のターン
     }
 
-
+    public class Stats
+    {
+        //TarnからUnitTypeを返すメソッドを作る
+    }
 }
