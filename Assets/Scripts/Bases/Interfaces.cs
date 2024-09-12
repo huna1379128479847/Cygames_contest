@@ -4,11 +4,22 @@ using UnityEngine;
 
 namespace Contest
 {
-    public interface IUnit//ユニット用
+    public interface IUnit // ユニット用
     {
-        UnitType UnitType { get; }
         string Name { get; }
-        void Update();
+        UnitType MyUnitType { get; }
+        UnitBase MyUnitBase { get; }
+        SkillTracker SkillTracker { get; }
+        void TurnBehavior();
+    }
+
+    public interface IPlayerHandler // プレイヤー用の選択肢生成
+    {
+        // プレイヤーの選択肢を生成するメソッドの例
+        void GeneratePlayerOptions();
+
+        // プレイヤーの選択肢が選ばれた時の処理
+        void HandlePlayerSelection(int selectionId);
     }
 
     public interface IEnemy//敵ユニット用
@@ -28,4 +39,20 @@ namespace Contest
         int Atk { get; }
         int Def { get; }
     }
+
+    public interface IManager
+    {
+        /// <summary>
+        /// このマネージャーまたはシーンが稼働中かどうかを管理します。
+        /// 稼働中でない場合、すべての動作が一時停止します。
+        /// </summary>
+        bool IsRunning { get; set; }
+
+        /// <summary>
+        /// このマネージャーがインスタンス化されたとき初めに呼ばれるメソッドです。
+        /// 初期化やセットアップ処理をここで行います。
+        /// </summary>
+        void Execute();
+    }
+
 }

@@ -15,8 +15,23 @@ namespace Contest
         private int speed;
         private int atk;
         private int def;
+        private SkillTracker skillTracker;
         public int Id { get; }
-        public UnitType UnitType { get; }
+        public UnitType MyUnitType { get; }
+        public UnitBase MyUnitBase
+        {
+            get
+            {
+                return this;
+            }
+        }
+        public SkillTracker SkillTracker 
+        {
+            get
+            {
+                return skillTracker;
+            }
+        }
         public virtual string Name
         {
             get
@@ -64,12 +79,19 @@ namespace Contest
             }
         }
 
-        public virtual void Update()
+        public virtual void TurnBehavior()
         {
-            if ("現在のターン（未実装）" != UnitType.ToString())
+            if (!FLGChecker.FLGCheck(((uint)BattleSceneManager.instance.Turn), (uint)MyUnitType))
             {
                 return;
             }
+        }
+
+        public UnitBase()
+        {
+            hp = MaxHP;
+            mp = MaxMP;
+            speed = MaxSpeed;
         }
     }
 }

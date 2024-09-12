@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Contest
 {
-    public abstract class Enemy : UnitBase, IEnemy
+    public abstract class EnemyBase : UnitBase, IEnemy
     {
         BehaviorPattern pattern;
         public BehaviorPattern BehaviorPattern

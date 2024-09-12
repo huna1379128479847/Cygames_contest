@@ -15,24 +15,21 @@ namespace Contest
     }
 
     //そのユニットの種別を示す
+    [Flags]
     public enum UnitType
     {
-        None,//なし
-        Friend,//味方
-        Enemy,//敵
-        FriendAI,//味方AI
-        EnemyAI,//敵AI
+        None = 0,           // なし
+        Friend = 1 << 0,    // 味方
+        Enemy = 1 << 1,     // 敵
+        FriendAI = 1 << 2,  // 味方AI
+        EnemyAI = 1 << 3,   // 敵AI
     }
 
-    //BattleSceneで使用:現在のターンを示す
-    public enum Tarn
+    // BattleSceneで使用:現在のターンを示す
+    public enum Turn
     {
-        Friend,//味方のターン
-        Enemy,//敵のターン
-    }
-
-    public class Stats
-    {
-        //TarnからUnitTypeを返すメソッドを作る
+        None = 0,                              // ターンなし
+        Friend = UnitType.Friend | UnitType.FriendAI,  // 味方のターン
+        Enemy = UnitType.Enemy | UnitType.EnemyAI      // 敵のターン
     }
 }
