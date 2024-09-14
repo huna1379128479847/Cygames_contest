@@ -11,7 +11,6 @@ namespace Contest
         
         public override void TurnBehavior()
         {
-            base.TurnBehavior();
             GeneratePlayerOptions();
         }
 

@@ -11,6 +11,7 @@ namespace Contest
     public abstract class EnemyBase : UnitBase, IEnemy
     {
         BehaviorPattern pattern;
+        SkillTracker skillTracker;
         public BehaviorPattern BehaviorPattern
         {
             get
@@ -18,7 +19,5 @@ namespace Contest
                 return pattern;
             }
         }
-
-        public abstract void EnemyBehavior();
     }
 }

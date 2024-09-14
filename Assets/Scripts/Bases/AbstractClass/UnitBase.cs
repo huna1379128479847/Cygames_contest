@@ -7,16 +7,22 @@ using UnityEngine;
 
 namespace Contest
 {
-    public abstract class UnitBase : MonoBehaviour, IUnit, IStats
+    public abstract class UnitBase : MonoBehaviour, IUnit, IStats, IUniqueThing
     {
+        [SerializeField] object UnitData;//未実装のため仮でobject
+        private string id;
         private string _name;
         private int hp;
         private int mp;
         private int speed;
         private int atk;
         private int def;
+        private bool myTurn;
+        private bool firstExecute;
         private SkillTracker skillTracker;
-        public int Id { get; }
+        public List<StatusEffect> statusEffects = new List<StatusEffect>();
+        public bool IsDead {  get; private set; }
+        public string ID { get { return id; } }
         public UnitType MyUnitType { get; }
         public UnitBase MyUnitBase
         {
@@ -79,16 +85,63 @@ namespace Contest
             }
         }
 
-        public virtual void TurnBehavior()
+        public void TurnChange()
         {
-            if (!FLGChecker.FLGCheck(((uint)BattleSceneManager.instance.Turn), (uint)MyUnitType))
+            myTurn ^= true;
+        }
+        public virtual void DeadBehavior()
+        {
+            BattleSceneManager.instance.RemoveUnit(ID);
+        }
+        /// <summary>
+        /// 必ず最後に「TurnChange()」と書くこと
+        /// </summary>
+        public abstract void TurnBehavior();
+        public abstract void ActionBehavior();
+        public virtual void Notify_Dead()
+        {
+            IsDead = true;
+        }
+        public virtual void Notify_CC() 
+        { 
+        }
+        public virtual void AddEffect(StatusEffect effect)
+        {
+            if (effect != null && !statusEffects.Contains(effect))
             {
-                return;
+                statusEffects.Add(effect);
+                effect.Parent = this;
+            }
+            else if (statusEffects.Contains(effect))
+            {
+                statusEffects.ForEach(haveEffect =>
+                {
+                    if (haveEffect.Name == effect.Name)
+                    {
+                        haveEffect.UpdateStatsEffect();
+                    }
+                });
             }
         }
-
-        public UnitBase()
+        public virtual void Update()
         {
+            if (myTurn)
+            {
+                if (firstExecute)
+                {
+                    statusEffects.ForEach(effect => effect.ExecuteEffect());
+                    firstExecute = false;
+                }
+                TurnBehavior();
+            }
+            else if (!firstExecute)
+            {
+                firstExecute = true;
+            }
+        }
+        private void Awake()
+        {
+            id = Guid.NewGuid().ToString("N");
             hp = MaxHP;
             mp = MaxMP;
             speed = MaxSpeed;
