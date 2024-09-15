@@ -3,53 +3,105 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 
 namespace Contest
 {
-    public abstract class StatusEffect : IUniqueThing
+    public abstract class StatusEffect : IUniqueThing, IEffect
     {
-        protected UnitBase parent;
-        public string Name { get; protected set; }
-        public int Duration { get; protected set; } // 状態異常の持続時間（ターン数）
+        private StatusEffectData _data;
+        private EffectFlgs effect;
+        private EffectTiming effectTiming;
+        protected EffectHandler parent;
+        private string name;
+        private string description;
+        private int duration;
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+
+        }
+        public int Duration // 状態異常の持続時間（ターン数）
+        {
+            get
+            {
+                return duration;
+            }
+        }
         public string ID { get; protected set; }
 
-        public StatsEffect effect;
 
         // 状態異常が持続しているかどうかを確認するプロパティ    
         public virtual bool IsExpired
         {
-            get { return Duration <= 0; }
-        }
-
-        public UnitBase Parent
-        {
             get 
             { 
-                return parent; 
+                return Duration <= 0; 
             }
-            set 
-            { 
+        }
+
+        public EffectHandler Parent
+        {
+            get
+            {
+                return parent;
+            }
+            set
+            {
                 if (parent == null)
                 {
                     parent = value;
-                } 
+                }
+            }
+        }
+
+        public EffectTiming Timing
+        {
+            get
+            {
+                return Timing;
+            }
+        }
+        public EffectFlgs Flgs
+        {
+            get
+            {
+                return effect;
             }
         }
 
         // 状態異常が付与された時に呼び出されるメソッド
-        public abstract void Apply();
+        public virtual void Apply()
+        {
+        }
 
         // 状態異常が更新される時に呼び出されるメソッド
-        public abstract void UpdateStatsEffect();
+        public virtual void UpdateStatsEffect()
+        {
+            duration = _data.Duration;
+        }
 
         // 状態異常が解除された時に呼び出されるメソッド
-        public abstract void Remove();
+        public virtual void Remove()
+        {
+        }
 
         // 状態異常の残り時間を減少させるメソッド
-        protected virtual void DecreaseDuration(int time = 1)
+        public virtual void DecreaseDuration(int time = 1)
         {
-            Duration -= time;
-            if (Duration < 0) Duration = 0;
+            if (FLG.FLGCheck((uint)Flgs, (uint)EffectFlgs.Duration))
+            {
+                duration -= time;
+                if (Duration < 0) duration = 0;
+                if (IsExpired)
+                {
+                    parent.RemoveEffect(this);
+                }
+            }
+
         }
 
         public abstract void ExecuteEffect(Action action = null);

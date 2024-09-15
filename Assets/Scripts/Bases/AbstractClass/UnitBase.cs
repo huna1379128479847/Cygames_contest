@@ -7,35 +7,40 @@ using UnityEngine;
 
 namespace Contest
 {
-    public abstract class UnitBase : MonoBehaviour, IUnit, IStats, IUniqueThing
+    public abstract class UnitBase : MonoBehaviour, IUnit, IUniqueThing, IDoAction
     {
-        [SerializeField] object UnitData;//未実装のため仮でobject
+        public UnitData unitData;//インスペクターでアタッチすること
+        public SkillHandler skillHandler;
+        public EffectHandler effectHandler;
+        public StatusTracker statusTracker;
         private string id;
         private string _name;
-        private int hp;
-        private int mp;
-        private int speed;
-        private int atk;
-        private int def;
         private bool myTurn;
         private bool firstExecute;
-        private SkillTracker skillTracker;
-        public List<StatusEffect> statusEffects = new List<StatusEffect>();
-        public bool IsDead {  get; private set; }
-        public string ID { get { return id; } }
-        public UnitType MyUnitType { get; }
-        public UnitBase MyUnitBase
+        private Skill selectedSkill;
+        private UnitType myUnitType;
+        public bool IsDead { get; private set; }
+        public bool InAction
         {
             get
             {
-                return this;
+                return (selectedSkill != null && selectedSkill.InAction);
             }
         }
-        public SkillTracker SkillTracker 
+        public string ID { get { return id; } }
+        public virtual UnitType MyUnitType 
         {
             get
             {
-                return skillTracker;
+                return myUnitType;
+            }
+            
+        }
+        public SkillHandler SkillHandler
+        {
+            get
+            {
+                return skillHandler;
             }
         }
         public virtual string Name
@@ -45,49 +50,27 @@ namespace Contest
                 return _name;
             }
         }
-
-        public int MaxHP { get; }
-        public int CurrentHP
+        public virtual bool CanAction
         {
             get
             {
-                return hp;
+                if (IsDead) return false;
+                foreach (var effects in effectHandler.effectsByTiming)
+                {
+                    foreach (var effect in effects.Value)
+                    {
+                        if (FLG.FLGCheck((uint)effect.Value.Flgs, (uint)EffectFlgs.Controll))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
             }
         }
-        public int MaxMP { get; }
-        public int CurrentMP
-        {
-            get
-            {
-                return mp;
-            }
-        }
-        public int MaxSpeed { get; }
-        public int CurrentSpeed
-        {
-            get
-            {
-                return speed;
-            }
-        }
-        public int Atk
-        {
-            get
-            {
-                return atk;
-            }
-        }
-        public int Def
-        {
-            get
-            {
-                return def;
-            }
-        }
-
         public void TurnChange()
         {
-            myTurn ^= true;
+            myTurn = !myTurn;
         }
         public virtual void DeadBehavior()
         {
@@ -97,31 +80,9 @@ namespace Contest
         /// 必ず最後に「TurnChange()」と書くこと
         /// </summary>
         public abstract void TurnBehavior();
-        public abstract void ActionBehavior();
         public virtual void Notify_Dead()
         {
             IsDead = true;
-        }
-        public virtual void Notify_CC() 
-        { 
-        }
-        public virtual void AddEffect(StatusEffect effect)
-        {
-            if (effect != null && !statusEffects.Contains(effect))
-            {
-                statusEffects.Add(effect);
-                effect.Parent = this;
-            }
-            else if (statusEffects.Contains(effect))
-            {
-                statusEffects.ForEach(haveEffect =>
-                {
-                    if (haveEffect.Name == effect.Name)
-                    {
-                        haveEffect.UpdateStatsEffect();
-                    }
-                });
-            }
         }
         public virtual void Update()
         {
@@ -129,10 +90,18 @@ namespace Contest
             {
                 if (firstExecute)
                 {
-                    statusEffects.ForEach(effect => effect.ExecuteEffect());
+                    effectHandler.EffectExecution(EffectTiming.After);
                     firstExecute = false;
                 }
-                TurnBehavior();
+                if (selectedSkill == null || !selectedSkill.InAction)
+                {
+                    TurnBehavior();
+                }
+                else
+                {
+                    selectedSkill.SetAction();
+                }
+
             }
             else if (!firstExecute)
             {
@@ -142,9 +111,8 @@ namespace Contest
         private void Awake()
         {
             id = Guid.NewGuid().ToString("N");
-            hp = MaxHP;
-            mp = MaxMP;
-            speed = MaxSpeed;
+            statusTracker = new StatusTracker(this);
+            myUnitType = unitData.UnitType;
         }
     }
 }
