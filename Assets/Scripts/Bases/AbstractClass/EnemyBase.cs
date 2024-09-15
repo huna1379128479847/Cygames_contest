@@ -21,6 +21,7 @@ namespace Contest
             }
         }
 
+        //適宜オーバーライドして書き換えてね
         public override void TurnBehavior()
         {
             if (pattern == BehaviorPattern.Aggressive)
