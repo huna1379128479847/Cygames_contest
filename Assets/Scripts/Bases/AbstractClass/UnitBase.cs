@@ -10,7 +10,6 @@ namespace Contest
     public abstract class UnitBase : MonoBehaviour, IUnit, IUniqueThing, IDoAction
     {
         public UnitData unitData;//インスペクターでアタッチすること
-        public SkillHandler skillHandler;
         public EffectHandler effectHandler;
         public StatusTracker statusTracker;
         private string id;
@@ -19,7 +18,15 @@ namespace Contest
         private bool firstExecute;
         private Skill selectedSkill;
         private UnitType myUnitType;
-        public bool IsDead { get; private set; }
+        private SkillHandler skillHandler;
+
+        public virtual bool IsDead
+        {
+            get
+            {
+                return statusTracker.CurrentHP.IsDead || statusTracker.CurrentMP.IsDead;
+            }
+        }
         public bool InAction
         {
             get
@@ -68,21 +75,11 @@ namespace Contest
                 return true;
             }
         }
-        public void TurnChange()
+        protected virtual void Awake()
         {
-            myTurn = !myTurn;
-        }
-        public virtual void DeadBehavior()
-        {
-            BattleSceneManager.instance.RemoveUnit(ID);
-        }
-        /// <summary>
-        /// 必ず最後に「TurnChange()」と書くこと
-        /// </summary>
-        public abstract void TurnBehavior();
-        public virtual void Notify_Dead()
-        {
-            IsDead = true;
+            id = Guid.NewGuid().ToString("N");
+            statusTracker = new StatusTracker(this);
+            myUnitType = unitData.UnitType;
         }
         public virtual void Update()
         {
@@ -108,11 +105,33 @@ namespace Contest
                 firstExecute = true;
             }
         }
-        private void Awake()
+        public void TurnChange()
         {
-            id = Guid.NewGuid().ToString("N");
-            statusTracker = new StatusTracker(this);
-            myUnitType = unitData.UnitType;
+            myTurn = !myTurn;
+        }
+        public virtual void DeadBehavior()
+        {
+            BattleSceneManager.instance.RemoveUnit(ID);
+        }
+        /// <summary>
+        /// 必ず最後に「TurnChange()」と書くこと
+        /// </summary>
+        public abstract void TurnBehavior();
+        public virtual void Notify_Dead()
+        {
+        }
+        public virtual void Pre_TakeDamage()
+        {
+        }
+        public virtual void Post_TakeDamage()
+        {
+        }
+
+        public virtual void TakeDamage(DamageInfo info, bool isFix)
+        {
+            Pre_TakeDamage();
+            float damage = info.skill.DamageAmount;
+            if (info.isBad) damage *= -1;
         }
     }
 }

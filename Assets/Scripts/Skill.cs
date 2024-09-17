@@ -10,10 +10,12 @@ namespace Contest
     public abstract class Skill : MonoBehaviour, IDoAction
     {
         public SkillData skillData;
-        public SkillHandler parent;
+        private SkillHandler parent;
         private bool inAction;
         private SkillFlgs skillFlgs;
         private SkillTarget target;
+        private bool isBad;
+        private bool isAttack;
         public bool InAction
         {
             get
@@ -40,6 +42,13 @@ namespace Contest
             get
             {
                 return skillData.Cost >= parent.parent.statusTracker.CurrentMP.CurrentAmount;
+            }
+        }
+        public virtual int DamageAmount
+        {
+            get
+            {
+                return (int)(skillData.Amount + parent.parent.statusTracker.Atk.CurrentAmount * skillData.Magnification);
             }
         }
         public virtual void SetAction()

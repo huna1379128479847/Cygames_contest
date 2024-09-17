@@ -43,7 +43,19 @@ namespace Contest
 
         public virtual void Execute(float aggressive, float defensive, float support)
         {
+            float r = UnityEngine.Random.value;
+            if (r <= aggressive)
+            {
 
+            }
+            else if (r <= defensive)
+            {
+
+            }
+            else if (r <= support)
+            {
+
+            }
         }
     }
 }

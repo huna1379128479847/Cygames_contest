@@ -78,7 +78,7 @@ namespace Contest
         {
             if (!IsRunning) { return; }
             //論理積で今のターンがユニットの種別と合致するか判定する
-            if (unitBases[idx] != null && ((uint)unitBases[idx].MyUnitType & (uint)turn) != 0)
+            if (unitBases[idx] != null && FLG.FLGCheck((uint)unitBases[idx].MyUnitType ,(uint)turn))
             {
                 canProgress = false;
                 unitBases[idx].TurnChange();
@@ -115,9 +115,9 @@ namespace Contest
                     canProgress = true;
                     endAction = false;
                     idx++;
-                    if (idx == unitBases.Count)
+                    if (idx >= unitBases.Count)
                     {
-
+                        TurnChange();
                     }
                 }
             }

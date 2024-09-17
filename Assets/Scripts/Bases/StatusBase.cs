@@ -2,20 +2,21 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 
 namespace Contest
 {
-    public class StatusBase
+    public class StatusBase : IUniqueThing
     {
+        public string name;
         public UnitBase Parent { get; private set; }
-
+        protected string id;
         // スレッドセーフなコレクションを使用
         // キーのIDはGUIDを使う
         protected ConcurrentDictionary<string, float> magnification;
         protected ConcurrentDictionary<string, int> effectAmount;
         protected int defaultAmount;
         protected int currentAmount;
-        protected bool isNeedSurv;
         private readonly object lockObject = new object(); // ロックオブジェクト
         private bool isDirty; // 変更フラグ
 
@@ -30,16 +31,33 @@ namespace Contest
                 }
                 return currentAmount;
             }
+            set
+            {
+                currentAmount += value;
+            }
         }
-
-        public StatusBase(int amount, bool isNeedSurv = false)
+        public string ID
+        {
+            get
+            {
+                return id;
+            }
+        }
+        public virtual bool IsDead
+        {
+            get
+            {
+                return currentAmount <= 0;
+            }
+        }
+        public StatusBase(int amount)
         {
             defaultAmount = amount;
             currentAmount = amount; // 初期値設定
-            this.isNeedSurv = isNeedSurv;
             magnification = new ConcurrentDictionary<string, float>();
             effectAmount = new ConcurrentDictionary<string, int>();
             isDirty = true; // 初期状態は変更があると設定
+            id = Guid.NewGuid().ToString("N");
         }
 
         // ステータスの値を再計算
@@ -53,6 +71,7 @@ namespace Contest
                 // 計算後に現在のAmountを設定
                 currentAmount = (int)((defaultAmount + totalEffectAmount) * (1 + totalMagnification));
                 isDirty = false; // 再計算後にフラグをリセット
+
             }
         }
 
