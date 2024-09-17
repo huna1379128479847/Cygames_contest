@@ -131,7 +131,13 @@ namespace Contest
         {
             Pre_TakeDamage();
             float damage = info.skill.DamageAmount;
-            if (info.isBad) damage *= -1;
+            float finalDamage = damage;
+            if (!isFix)
+            {
+            finalDamage = Mathf.Clamp(damage-info.damageTaker.StatusTracker.Def.CurrentAmount, damage / 4, 99999);
+            }
+            if (info.isBad) finalDamage *= -1;
+            statusTracker.CurrentHP.CurrentAmount -= finalDamage;
         }
     }
 }
