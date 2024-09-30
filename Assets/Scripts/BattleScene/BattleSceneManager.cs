@@ -15,21 +15,20 @@ namespace Contest
     public class BattleSceneManager : SingletonBehavior<BattleSceneManager>, IManager
     {
         private Turn turn = Turn.Friend;
-        private bool isRunning;
+        private bool isRunning = false;
         List<GameObject> units = new List<GameObject>();
         List<UnitBase> unitBases = new List<UnitBase>();
-        private bool shouldEndBattle = false;
         private bool endInitialize = false;
         private bool canProgress = true;
         private bool endAction = false;
         private int friend = 0;
         private int enemy = 0;
         private int idx = 0;
-        public bool IsRunning
+        public virtual bool IsRunning
         {
             get
             {
-                return isRunning;
+                return isRunning && !unitBases[idx].InAction;
             }
             set
             {
@@ -81,7 +80,7 @@ namespace Contest
             if (unitBases[idx] != null && FLG.FLGCheck((uint)unitBases[idx].MyUnitType ,(uint)turn))
             {
                 canProgress = false;
-                unitBases[idx].TurnChange();
+                unitBases[idx].EnterTurn();
             }
             else if (unitBases[idx] == null)
             {
@@ -98,7 +97,7 @@ namespace Contest
         {
             if (unitBases[idx] != null || friend == 0 || enemy == 0)
             {
-                shouldEndBattle = true;
+                
             }
         }
         void Update()

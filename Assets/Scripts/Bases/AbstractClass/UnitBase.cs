@@ -83,7 +83,13 @@ namespace Contest
         }
         public virtual void Update()
         {
-            if (myTurn)
+            if (BattleSceneManager.instance.IsRunning) return;
+            if (InAction)
+            {
+                selectedSkill.SetAction();
+                return;
+            }
+            if (myTurn && CanAction)
             {
                 if (firstExecute)
                 {
@@ -105,10 +111,15 @@ namespace Contest
                 firstExecute = true;
             }
         }
-        public void TurnChange()
+        public void EnterTurn()
         {
-            myTurn = !myTurn;
+            myTurn = true;
         }
+        public void ExitTurn()
+        {
+            myTurn = false;
+        }
+
         public virtual void DeadBehavior()
         {
             BattleSceneManager.instance.RemoveUnit(ID);

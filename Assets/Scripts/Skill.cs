@@ -10,7 +10,7 @@ namespace Contest
     public abstract class Skill : MonoBehaviour, IDoAction
     {
         public SkillData skillData;
-        private SkillHandler parent;
+        protected SkillHandler parent;
         private bool inAction;
         private SkillFlgs skillFlgs;
         private SkillTarget target;
@@ -53,21 +53,24 @@ namespace Contest
         }
         public virtual void SetAction()
         {
-            if (!InAction)
+            if (!inAction)
             {
                 inAction = true;
             } 
         }
         public virtual void EndAction()
         {
-            if (InAction)
+            if (inAction)
             {
                 inAction = false;
             }
         }
         void Update()
         {
+            if (inAction)
+            {
 
+            }
         }
     }
 }

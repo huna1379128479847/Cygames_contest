@@ -62,7 +62,7 @@ namespace Contest
         {
             get
             {
-                return Timing;
+                return effectTiming;
             }
         }
         public EffectFlgs Flgs
