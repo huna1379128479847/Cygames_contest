@@ -11,7 +11,7 @@ namespace Contest
         /// タイミングごとに効果を分類して管理するDictionary。
         /// EffectTimingと固有IDがキーになる。
         /// </summary>
-        public Dictionary<EffectTiming, Dictionary<string, StatusEffect>> effectsByTiming = new Dictionary<EffectTiming, Dictionary<string, StatusEffect>>();
+        public Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>> effectsByTiming = new Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>>();
 
         public void EffectExecution(EffectTiming effectTiming)
         {
@@ -28,21 +28,22 @@ namespace Contest
 
         public void GiveEffect(StatusEffect effect)
         {
-            if (effect == null) return;
+            if (effect == null) return; // 無効な効果は無視
 
-            // タイミングごとに効果を分類
+            // 効果のタイミングごとに分類されているか確認し、なければ新規作成
             if (!effectsByTiming.ContainsKey(effect.Timing))
             {
-                effectsByTiming[effect.Timing] = new Dictionary<string, StatusEffect>();
+                effectsByTiming[effect.Timing] = new Dictionary<Guid, StatusEffect>();
             }
 
+            // 指定されたタイミングの効果グループを取得
             var effectGroup = effectsByTiming[effect.Timing];
 
             if (effectGroup.ContainsKey(effect.ID))
             {
                 var existingEffect = effectGroup[effect.ID];
 
-                // Mergeフラグが立っている場合は効果を更新
+                // 既存の効果に対して、マージが必要か確認
                 if (FLG.FLGCheck((uint)existingEffect.Flgs, (uint)EffectFlgs.ShouldMerge))
                 {
                     existingEffect.UpdateStatsEffect();
@@ -50,10 +51,12 @@ namespace Contest
             }
             else
             {
+                // 新しい効果を追加し、Parentとしてこのオブジェクトを設定
                 effectGroup[effect.ID] = effect;
                 effect.Parent = this;
             }
         }
+
 
         public void RemoveEffect(StatusEffect effect)
         {

@@ -15,7 +15,7 @@ namespace Contest
 
     public interface IUniqueThing
     {
-        string ID { get; }
+        Guid ID { get; }
     }
     public interface IPlayerHandler // プレイヤー用の選択肢生成
     {
@@ -55,12 +55,6 @@ namespace Contest
         /// 稼働中でない場合、すべての動作が一時停止します。
         /// </summary>
         bool IsRunning { get; set; }
-
-        /// <summary>
-        /// このマネージャーがインスタンス化されたとき初めに呼ばれるメソッドです。
-        /// 初期化やセットアップ処理をここで行います。
-        /// </summary>
-        void Execute(List<object> Data);
     }
     public interface ISceneChanger
     {

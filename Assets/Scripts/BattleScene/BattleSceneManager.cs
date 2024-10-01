@@ -46,6 +46,13 @@ namespace Contest
             }
         }
 
+        public List<UnitBase> AllUnit
+        {
+            get
+            {
+                return unitBases;
+            }
+        }
         public void Execute(List<object> datas)
         {
             Notify_StartInitialize();
@@ -129,7 +136,7 @@ namespace Contest
         protected virtual void Notify_StartInitialize()
         {
         }
-        public virtual void RemoveUnit(string id)
+        public virtual void RemoveUnit(Guid id)
         {
             for (int i = 0; i < unitBases.Count; i++)
             {

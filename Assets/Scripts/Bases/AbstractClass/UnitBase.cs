@@ -12,7 +12,7 @@ namespace Contest
         public UnitData unitData;//インスペクターでアタッチすること
         public EffectHandler effectHandler;
         public StatusTracker statusTracker;
-        private string id;
+        private Guid id;
         private string _name;
         private bool myTurn;
         private bool firstExecute;
@@ -34,7 +34,8 @@ namespace Contest
                 return (selectedSkill != null && selectedSkill.InAction);
             }
         }
-        public string ID { get { return id; } }
+        public Guid ID { get { return id; } }
+        public bool CanSelect { get; set; }
         public virtual UnitType MyUnitType 
         {
             get
@@ -77,7 +78,7 @@ namespace Contest
         }
         protected virtual void Awake()
         {
-            id = Guid.NewGuid().ToString("N");
+            id = Guid.NewGuid();
             statusTracker = new StatusTracker(this);
             myUnitType = unitData.UnitType;
         }
@@ -145,10 +146,10 @@ namespace Contest
             float finalDamage = damage;
             if (!isFix)
             {
-            finalDamage = Mathf.Clamp(damage-info.damageTaker.StatusTracker.Def.CurrentAmount, damage / 4, 99999);
+            finalDamage = Mathf.Clamp(damage-info.damageTaker.statusTracker.Def.CurrentAmount, damage / 4, 99999);
             }
             if (info.isBad) finalDamage *= -1;
-            statusTracker.CurrentHP.CurrentAmount -= finalDamage;
+            statusTracker.CurrentHP.CurrentAmount += (int)finalDamage;
         }
     }
 }

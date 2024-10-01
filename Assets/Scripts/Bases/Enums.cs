@@ -76,16 +76,30 @@ namespace Contest
     }
 
     [Flags]
-    public enum SkillTarget
+    public enum TargetingPateren
     {
-        None = 0,
-        Self = 1 << 0,              // 自分のみ
-        Friend = 1 << 1,            // 味方
-        Enemy = 1 << 2,             // 敵
-        AI = 1 << 3,                // AI
-        All = 1 << 4,               // 敵or味方全体
-        Target1 = 1 << 5,           // １体   
-        Target2 = 1 << 6,           // ２体
-        Target3 = 1 << 7,           // ３体
+        None = 0,           //
+        Friend = 1 << 0,    // 味方
+        Enemy = 1 << 1,     // 敵
+        Solo = 1 << 2,      // 単体
+        Duo = 1 << 3,       // 二体まで
+        Trio = 1 << 4,      // 三体まで
+        All = 1 << 5,       // 全て
+        Random = 1 << 6,    // ランダム
+        Select = 1 << 7,    // 選ぶ
+    }
+    // エフェクトの種類
+    public enum ParticleType
+    {
+        HighLight,  // ハイライト
+        Stun,       // スタン
+    }
+
+    [Flags]
+    public enum ParticleOptions
+    {
+        None = 0,           //
+        Fitting = 1 << 0,   // 大きさを合わせる
+        Once = 1 << 1,      // 一度のみ再生
     }
 }

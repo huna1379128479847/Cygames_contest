@@ -7,15 +7,23 @@ using UnityEngine;
 
 namespace Contest
 {
-    public abstract class Skill : MonoBehaviour, IDoAction
+    public abstract class Skill : MonoBehaviour, IDoAction, IUniqueThing
     {
+        public Guid id;
         public SkillData skillData;
         protected SkillHandler parent;
         private bool inAction;
         private SkillFlgs skillFlgs;
-        private SkillTarget target;
+        private TargetingPateren target;
         private bool isBad;
         private bool isAttack;
+        public Guid ID
+        {
+            get
+            {
+                return id;
+            }
+        }
         public bool InAction
         {
             get
@@ -30,7 +38,7 @@ namespace Contest
                 return skillFlgs;
             }
         }
-        public SkillTarget Target
+        public TargetingPateren Target
         {
             get
             {
@@ -44,14 +52,14 @@ namespace Contest
                 return skillData.Cost >= parent.parent.statusTracker.CurrentMP.CurrentAmount;
             }
         }
-        public virtual int DamageAmount
+        public virtual int DamageAmount// 基本的な効果量の計算
         {
             get
             {
                 return (int)(skillData.Amount + parent.parent.statusTracker.Atk.CurrentAmount * skillData.Magnification);
             }
         }
-        public virtual void SetAction()
+        public virtual void SetAction() // スキルエフェクトなどの描画処理へ移行
         {
             if (!inAction)
             {

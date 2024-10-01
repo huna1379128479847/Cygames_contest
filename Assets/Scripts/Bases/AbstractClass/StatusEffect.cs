@@ -31,7 +31,7 @@ namespace Contest
                 return duration;
             }
         }
-        public string ID { get; protected set; }
+        public Guid ID { get; protected set; }
 
 
         // 状態異常が持続しているかどうかを確認するプロパティ    

@@ -10,7 +10,7 @@ namespace Contest
     {
         public string name;
         public UnitBase Parent { get; private set; }
-        protected string id;
+        protected Guid id;
         // スレッドセーフなコレクションを使用
         // キーのIDはGUIDを使う
         protected ConcurrentDictionary<string, float> magnification;
@@ -36,7 +36,7 @@ namespace Contest
                 currentAmount += value;
             }
         }
-        public string ID
+        public Guid ID
         {
             get
             {
@@ -57,7 +57,7 @@ namespace Contest
             magnification = new ConcurrentDictionary<string, float>();
             effectAmount = new ConcurrentDictionary<string, int>();
             isDirty = true; // 初期状態は変更があると設定
-            id = Guid.NewGuid().ToString("N");
+            id = Guid.NewGuid();
         }
 
         // ステータスの値を再計算
