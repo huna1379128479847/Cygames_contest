@@ -16,6 +16,7 @@ namespace Contest
         [SerializeField] private float magnification;           // 倍率などの数字を格納する用。
         [SerializeField] private bool isAttack;
         [SerializeField] private bool isBad;
+        [SerializeField] private List<TargetingPateren> paterns;
         [SerializeField] private StatusEffectData statusEffectData = null;
 
         public int Cost => cost;
@@ -23,6 +24,8 @@ namespace Contest
         public float Magnification => magnification;
         public bool IsAttack => isAttack;
         public bool IsBad => isBad;
+
+        public List<TargetingPateren> Paterens => paterns;
         public StatusEffectData StatusEffectData => statusEffectData;
     }
 }

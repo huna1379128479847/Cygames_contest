@@ -11,7 +11,7 @@ namespace Contest
     {
         public Guid id;
         public SkillData skillData;
-        protected SkillHandler parent;
+        public SkillHandler parent;
         private bool inAction;
         private SkillFlgs skillFlgs;
         private TargetingPateren target;
@@ -71,6 +71,17 @@ namespace Contest
             if (inAction)
             {
                 inAction = false;
+            }
+        }
+        public virtual void Notyfy_Selected(List<UnitBase> units)
+        {
+            if (units == null || units.Count == 0) { return; }
+            foreach (UnitBase unit in units)
+            {
+                if (unit != null)
+                {
+                    unit.TakeDamage(new DamageInfo(this, parent.parent, unit), false);
+                }
             }
         }
         void Update()

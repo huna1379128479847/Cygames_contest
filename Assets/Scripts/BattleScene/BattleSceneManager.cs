@@ -28,7 +28,7 @@ namespace Contest
         {
             get
             {
-                return isRunning && !unitBases[idx].InAction;
+                return isRunning && !unitBases[idx].InAction && !SelectManager.instance.InSelecting;
             }
             set
             {
@@ -51,6 +51,22 @@ namespace Contest
             get
             {
                 return unitBases;
+            }
+        }
+
+        public int Friend
+        {
+            get
+            {
+                return friend;
+            }
+        }
+
+        public int Enemy
+        {
+            get
+            {
+                return enemy;
             }
         }
         public void Execute(List<object> datas)

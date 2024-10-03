@@ -9,7 +9,13 @@ namespace Contest
 {
     public static class ParticleManager
     {
+        // エフェクト、エフェクトを再生させるオブジェクト
+        private static Dictionary<GameObject, GameObject> particleSets;
         public static void MakeParticle(ParticleType particle, ParticleOptions options, GameObject target)
+        {
+
+        }
+        public static void DeleteParticle(GameObject target)
         {
 
         }
