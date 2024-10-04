@@ -19,6 +19,10 @@ namespace Contest
             return (flg & checkFlg) == checkFlg;
         }
 
+        public static bool FLGCheckHaving(uint flg, uint checkHaving)
+        {
+            return (flg & checkHaving) != 0;
+        }
         public static uint FLGUp(uint flg, uint checkFlg)
         {
             if (checkFlg != 0)

@@ -11,10 +11,9 @@ namespace Contest
         public string name;
         public UnitBase Parent { get; private set; }
         protected Guid id;
-        // スレッドセーフなコレクションを使用
         // キーのIDはGUIDを使う
-        protected Dictionary<string, float> magnification;
-        protected Dictionary<string, int> effectAmount;
+        protected Dictionary<Guid, float> magnification;
+        protected Dictionary<Guid, int> effectAmount;
         protected int defaultAmount;
         protected int currentAmount;
         private bool isDirty; // 変更フラグ
@@ -49,8 +48,8 @@ namespace Contest
         {
             defaultAmount = amount;
             currentAmount = amount; // 初期値設定
-            magnification = new Dictionary<string, float>();
-            effectAmount = new Dictionary<string, int>();
+            magnification = new Dictionary<Guid, float>();
+            effectAmount = new Dictionary<Guid, int>();
             isDirty = true; // 初期状態は変更があると設定
             id = Guid.NewGuid();
         }
@@ -67,20 +66,20 @@ namespace Contest
         }
 
         // エフェクトを追加
-        public void AddEffect(string id, float amount)
+        public void AddEffect(Guid id, float amount)
         {
             magnification[id] = amount; // 値を更新または追加
             isDirty = true; // 変更があったことをフラグで示す
         }
 
-        public void AddEffect(string id, int amount)
+        public void AddEffect(Guid id, int amount)
         {
             effectAmount[id] = amount; // 値を更新または追加
             isDirty = true; // 変更があったことをフラグで示す
         }
 
         // エフェクトを削除
-        public void RemoveEffect(string id)
+        public void RemoveEffect(Guid id)
         {
             bool removed = false;
             if (magnification.Remove(id))

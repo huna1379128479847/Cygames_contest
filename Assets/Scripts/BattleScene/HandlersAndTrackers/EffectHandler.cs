@@ -5,14 +5,46 @@ namespace Contest
 {
     public class EffectHandler
     {
+        // フィールド
         public UnitBase parent;
-
+        private EffectFlgs haveflgs = EffectFlgs.None;
+        private bool flgsDirty = false;
         /// <summary>
         /// タイミングごとに効果を分類して管理するDictionary。
         /// EffectTimingと固有IDがキーになる。
         /// </summary>
         public Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>> effectsByTiming = new Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>>();
 
+        // プロパティ
+        public EffectFlgs HaveFlgs
+        {
+            get
+            {
+                if (flgsDirty)
+                {
+                    MakeFlgs();
+                    flgsDirty = false;
+                }
+                return haveflgs;
+            }
+        }
+
+        // メソッド
+        public void MakeFlgs()
+        {
+            haveflgs = EffectFlgs.None;
+            foreach (var effects in effectsByTiming.Values)
+            {
+                foreach (var effect in effects.Values)
+                {
+                    EffectFlgs effectFlgs = effect.Flgs;
+                    if (FLG.FLGCheck((uint)haveflgs, (uint)effectFlgs))
+                    {
+                        FLG.FLGUp((uint)haveflgs, (uint)effectFlgs);
+                    }
+                }
+            }
+        }
         public void EffectExecution(EffectTiming effectTiming)
         {
             // 指定されたタイミングの効果だけを実行
@@ -55,30 +87,23 @@ namespace Contest
                 effectGroup[effect.ID] = effect;
                 effect.Parent = this;
             }
+            flgsDirty = true;
         }
-
-
         public void RemoveEffect(StatusEffect effect)
         {
             if (effect == null) return;
 
-            // 効果のタイミングを確認し、該当するタイミングの効果グループから削除
-            if (effectsByTiming.ContainsKey(effect.Timing))
+            if (effectsByTiming.TryGetValue(effect.Timing, out var effectGroup) && effectGroup.Remove(effect.ID))
             {
-                var effectGroup = effectsByTiming[effect.Timing];
-                if (effectGroup.ContainsKey(effect.ID))
+                if (effectGroup.Count == 0)
                 {
-                    effectGroup[effect.ID].Remove();
-                    effectGroup.Remove(effect.ID);
-
-                    // 効果グループが空になった場合はタイミングのDictionaryから削除
-                    if (effectGroup.Count == 0)
-                    {
-                        effectsByTiming.Remove(effect.Timing);
-                    }
+                    effectsByTiming.Remove(effect.Timing);
                 }
             }
+
+            flgsDirty = true;
         }
+
 
         public void ClearAllEffects()
         {

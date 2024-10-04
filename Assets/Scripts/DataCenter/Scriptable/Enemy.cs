@@ -10,11 +10,10 @@ namespace Contest
     [CreateAssetMenu(menuName = "敵ユニット")]
     public class Enemy : UnitData
     {
+        // フィールド
         [SerializeField] private BehaviorPattern enemyPattern;
 
-        [SerializeField] private List<SkillData> skillDatas;
-
+        // プロパティ
         public BehaviorPattern EnemyPattern => enemyPattern;
-        public List<SkillData> SkillDatas => skillDatas;
     }
 }

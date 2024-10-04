@@ -28,7 +28,7 @@ namespace Contest
         {
             get
             {
-                return isRunning && !unitBases[idx].InAction && !SkillSelectManager.instance.InSelecting;
+                return isRunning;
             }
             set
             {
@@ -38,37 +38,17 @@ namespace Contest
                 }
             }
         }
-        public Turn Turn
-        {
-            get
-            {
-                return turn;
-            }
-        }
 
-        public List<UnitBase> AllUnit
-        {
-            get
-            {
-                return unitBases;
-            }
-        }
+        public bool InAction => unitBases[idx].InAction;
 
-        public int Friend
-        {
-            get
-            {
-                return friend;
-            }
-        }
+        public bool InSelecting => SkillSelectManager.instance.InSelecting;
+        public Turn Turn => turn;
 
-        public int Enemy
-        {
-            get
-            {
-                return enemy;
-            }
-        }
+        public List<UnitBase> AllUnit => unitBases;
+
+        public int Friend => friend;
+
+        public int Enemy => enemy;
         public void Execute(List<GameObject> datas)
         {
             Notify_StartInitialize();

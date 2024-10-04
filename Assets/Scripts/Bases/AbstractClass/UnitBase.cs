@@ -157,7 +157,12 @@ namespace Contest
 
         public virtual Skill Choice()
         {
-            return Helpers.RandomPick(Helpers.RandomPick(skillHandler.skills));
+            return Helpers.RandomPick(skillHandler.skills);
+        }
+
+        public List<SkillData> GetSkillDatas()
+        {
+            return unitData.SkillDatas;
         }
     }
 }

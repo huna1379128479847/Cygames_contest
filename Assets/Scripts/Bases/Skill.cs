@@ -9,9 +9,9 @@ namespace Contest
 {
     public class Skill : IDoAction, IUniqueThing
     {
-        public Guid id;
         public SkillData skillData;
         public SkillHandler parent;
+        private Guid id;
         private bool inAction;
         private SkillFlgs skillFlgs;
         private bool isBad;
@@ -82,9 +82,11 @@ namespace Contest
                 }
             }
         }
-        public Skill()
+        public Skill(SkillData skillData, SkillHandler skillHandler)
         {
             id = Guid.NewGuid();
+            this.skillData = skillData;
+            parent = skillHandler;
         }
     }
 }

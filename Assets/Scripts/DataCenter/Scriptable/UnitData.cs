@@ -16,6 +16,7 @@ namespace Contest
         [SerializeField, Min(0)] private int def;
         [SerializeField, Min(0)] private int speed;
         [SerializeField] private UnitType unitType;
+        [SerializeField] private List<SkillData> skillDatas;
 
         /// <summary>
         /// ユニットの最大HP
@@ -46,5 +47,7 @@ namespace Contest
         /// ユニットの種類
         /// </summary>
         public UnitType UnitType => unitType;
+
+        public List<SkillData> SkillDatas => skillDatas;
     }
 }

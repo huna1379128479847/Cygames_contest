@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Contest
 {
@@ -14,6 +15,8 @@ namespace Contest
         private bool forceSelect;
         public delegate bool SelectedUnitFilter(UnitBase unit);
         public event SelectedUnitFilter Filter;
+        public delegate void CallBackSelection(List<UnitBase> unitBases);
+        public event CallBackSelection CallBack;
         private bool isRunning;
         //定数
         private const int InvalidSelectionCount = -100;

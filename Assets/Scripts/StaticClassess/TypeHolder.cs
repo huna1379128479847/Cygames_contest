@@ -1,43 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Contest
 {
     public static class TypeHolder
     {
+        // デリゲート＆イベント
+        public delegate void SetSkillClass(List<Type> types);
+        public static event SetSkillClass SetSkill;
+        public delegate void SetEffectClass (List<Type> types);
+        public static event SetEffectClass SetEffect;
         // フィールド
-        private static Dictionary<Type, SkillData> skillDataSet;
-        private static Dictionary<Type, StatusEffectData> statusEffectDataSet;
+        private static Dictionary<SkillData, Type> skillDataSet = new Dictionary<SkillData, Type>();
+        private static Dictionary<StatusEffectData, Type> statusEffectDataSet = new Dictionary<StatusEffectData, Type>();
 
         // プロパティ
-        public static Dictionary<Type, SkillData> SkillDataSet => skillDataSet;
-        public static Dictionary<Type, StatusEffectData> StatusDataSet => statusEffectDataSet;
+        public static Dictionary<SkillData, Type> SkillDataSet => skillDataSet;
+        public static Dictionary<StatusEffectData, Type> StatusDataSet => statusEffectDataSet;
 
         // メソッド
 
+        // SkillDataに基づいて辞書にTypeを追加
         public static void SetDictionary(SkillData skillData)
         {
+            if (skillDataSet.ContainsKey(skillData)) { return; }
+            if (skillData == null || string.IsNullOrEmpty(skillData.ClassName))
+            {
+                Debug.LogError("SkillDataまたはそのClassNameが不正です。");
+                return;
+            }
+
             Type type = Type.GetType(skillData.ClassName);
             if (type != null)
             {
-                skillDataSet.Add(type, skillData);
+                if (!skillDataSet.ContainsKey(skillData))
+                {
+                    skillDataSet.Add(skillData, type);
+                }
+                else
+                {
+                    Debug.LogWarning($"SkillData {skillData.ClassName} は既に辞書に存在します。");
+                }
             }
-        }
-        public static void SetDictionary(StatusEffectData statusEffectData)
-        {
-            Type type = Type.GetType(statusEffectData.ClassName);
-            if (type != null)
+            else
             {
-                statusEffectDataSet.Add(type, statusEffectData);
+                Debug.LogError($"クラス名 '{skillData.ClassName}' に対応する型が見つかりません。");
             }
         }
 
-        public static Type GetClass<T>()
+        // StatusEffectDataに基づいて辞書にTypeを追加
+        public static void SetDictionary(StatusEffectData statusEffectData)
         {
-            return typeof(T);
+            if (statusEffectDataSet.ContainsKey(statusEffectData)) { return; }
+            if (statusEffectData == null || string.IsNullOrEmpty(statusEffectData.ClassName))
+            {
+                Debug.LogError("StatusEffectDataまたはそのClassNameが不正です。");
+                return;
+            }
+
+            Type type = Type.GetType(statusEffectData.ClassName);
+            if (type != null)
+            {
+                if (!statusEffectDataSet.ContainsKey(statusEffectData))
+                {
+                    statusEffectDataSet.Add(statusEffectData, type);
+                }
+                else
+                {
+                    Debug.LogWarning($"StatusEffectData {statusEffectData.ClassName} は既に辞書に存在します。");
+                }
+            }
+            else
+            {
+                Debug.LogError($"クラス名 '{statusEffectData.ClassName}' に対応する型が見つかりません。");
+            }
+        }
+
+        // SkillDataの型を取得
+        public static Type GetTypeDictionary(SkillData skillData)
+        {
+            if (skillDataSet.ContainsKey(skillData))
+            {
+                return skillDataSet[skillData];
+            }
+            else
+            {
+                Debug.LogError($"SkillData {skillData.ClassName} に対応する型が辞書に存在しません。");
+                return null;
+            }
+        }
+
+        // StatusEffectDataの型を取得
+        public static Type GetTypeDictionary(StatusEffectData statusEffectData)
+        {
+            if (statusEffectDataSet.ContainsKey(statusEffectData))
+            {
+                return statusEffectDataSet[statusEffectData];
+            }
+            else
+            {
+                Debug.LogError($"StatusEffectData {statusEffectData.ClassName} に対応する型が辞書に存在しません。");
+                return null;
+            }
         }
     }
 }

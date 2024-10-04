@@ -10,8 +10,6 @@ namespace Contest
     public abstract class StatusEffect : IUniqueThing, IEffect
     {
         public StatusEffectData _data;
-        private EffectFlgs effect;
-        private EffectTiming effectTiming;
         protected EffectHandler parent;
         private string name;
         private string description;
@@ -62,14 +60,14 @@ namespace Contest
         {
             get
             {
-                return effectTiming;
+                return _data.Timing;
             }
         }
         public EffectFlgs Flgs
         {
             get
             {
-                return effect;
+                return _data.Effect;
             }
         }
 
