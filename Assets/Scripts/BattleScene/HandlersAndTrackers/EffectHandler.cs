@@ -84,5 +84,39 @@ namespace Contest
         {
             effectsByTiming.Clear();
         }
+
+        public StatusEffect GetFirstEffect(string tag)
+        {
+            foreach (var effectUnique in effectsByTiming.Values)
+            {
+                foreach (var effect in effectUnique.Values)
+                {
+                    if (effect._data.Tags.Contains(tag))
+                    {
+                        return effect;
+                    }
+                }
+            }
+            return null;
+        }
+        public StatusEffect GetStatusEffect(StatusEffect statusEffect)
+        {
+            foreach (var effectUnique in effectsByTiming.Values)
+            {
+                foreach (var effect in effectUnique.Values)
+                {
+                    if (effect._data.Name == statusEffect.Name)
+                    {
+                        return effect;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public EffectHandler(UnitBase unit)
+        {
+            parent = unit;
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -80,6 +81,8 @@ namespace Contest
         {
             id = Guid.NewGuid();
             statusTracker = new StatusTracker(this);
+            effectHandler = new EffectHandler(this);
+            skillHandler = new SkillHandler(this);
             myUnitType = unitData.UnitType;
         }
         public virtual void Update()
@@ -105,7 +108,6 @@ namespace Contest
                 {
                     selectedSkill.SetAction();
                 }
-
             }
             else if (!firstExecute)
             {
@@ -120,6 +122,7 @@ namespace Contest
         {
             myTurn = false;
         }
+
 
         public virtual void DeadBehavior()
         {
@@ -150,6 +153,11 @@ namespace Contest
             }
             if (info.isBad) finalDamage *= -1;
             statusTracker.CurrentHP.CurrentAmount += (int)finalDamage;
+        }
+
+        public virtual Skill Choice()
+        {
+            return Helpers.RandomPick(Helpers.RandomPick(skillHandler.skills));
         }
     }
 }

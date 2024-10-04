@@ -9,7 +9,7 @@ namespace Contest
 {
     public abstract class StatusEffect : IUniqueThing, IEffect
     {
-        private StatusEffectData _data;
+        public StatusEffectData _data;
         private EffectFlgs effect;
         private EffectTiming effectTiming;
         protected EffectHandler parent;

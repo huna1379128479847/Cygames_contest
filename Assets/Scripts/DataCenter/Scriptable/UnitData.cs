@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Contest
 {
     [CreateAssetMenu(menuName = "ユニット")]
-    public class UnitData : DataBase
+    public class UnitData : HasTags
     {
         [SerializeField, Min(0)] private int hp;
         [SerializeField, Min(0)] private int mp;

@@ -76,7 +76,7 @@ namespace Contest
     }
 
     [Flags]
-    public enum TargetingPateren
+    public enum TargetingPattern
     {
         None = 0,           //
         Friend = 1 << 0,    // 味方
@@ -96,10 +96,28 @@ namespace Contest
     }
 
     [Flags]
-    public enum ParticleOptions
+    public enum AnimationOptions
     {
         None = 0,           //
         Fitting = 1 << 0,   // 大きさを合わせる
         Once = 1 << 1,      // 一度のみ再生
+    }
+
+    /// <summary>
+    /// AnimationHandlerへの引数を定義する
+    /// </summary>
+    public enum AnimationType
+    {
+        NormalAttack,
+        SpecialAttack,
+        TakeDamage,
+        TakeHeavyDamage,
+    }
+
+    public enum CustomFilterOptions
+    {
+        NeedTags,
+        UpToParam,
+        DownToParam,
     }
 }

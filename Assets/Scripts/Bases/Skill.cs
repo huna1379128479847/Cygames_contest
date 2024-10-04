@@ -7,14 +7,13 @@ using UnityEngine;
 
 namespace Contest
 {
-    public abstract class Skill : MonoBehaviour, IDoAction, IUniqueThing
+    public class Skill : IDoAction, IUniqueThing
     {
         public Guid id;
         public SkillData skillData;
         public SkillHandler parent;
         private bool inAction;
         private SkillFlgs skillFlgs;
-        private TargetingPateren target;
         private bool isBad;
         private bool isAttack;
         public Guid ID
@@ -24,7 +23,11 @@ namespace Contest
                 return id;
             }
         }
-        public bool InAction
+        /// <summary>
+        /// アニメーション実行中かどうか。エフェクト再生中等でもTrue.
+        /// メモ：コルーチンを使った方法に書き換えるかもしれない
+        /// </summary>
+        public bool InAction 
         {
             get
             {
@@ -36,13 +39,6 @@ namespace Contest
             get
             {
                 return skillFlgs;
-            }
-        }
-        public TargetingPateren Target
-        {
-            get
-            {
-                return target;
             }
         }
         public virtual bool CanUse
@@ -64,7 +60,8 @@ namespace Contest
             if (!inAction)
             {
                 inAction = true;
-            } 
+                SkillSelectManager.instance.Init(this);
+            }
         }
         public virtual void EndAction()
         {
@@ -73,9 +70,10 @@ namespace Contest
                 inAction = false;
             }
         }
-        public virtual void Notyfy_Selected(List<UnitBase> units)
+        public virtual void InvokeSkill(List<UnitBase> units)
         {
             if (units == null || units.Count == 0) { return; }
+            AnimationHandler.InvokeAnimation(parent.parent.gameObject, skillData.AnimationType);
             foreach (UnitBase unit in units)
             {
                 if (unit != null)
@@ -84,12 +82,9 @@ namespace Contest
                 }
             }
         }
-        void Update()
+        public Skill()
         {
-            if (inAction)
-            {
-
-            }
+            id = Guid.NewGuid();
         }
     }
 }

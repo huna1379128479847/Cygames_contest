@@ -30,4 +30,11 @@ namespace Contest
             set => description = value;
         }
     }
+
+    public class HasTags : DataBase
+    {
+        [SerializeField] private List<string> tags;
+
+        public List<string> Tags => tags;
+    }
 }

@@ -7,18 +7,22 @@ namespace Contest
 {
     public class SkillSelectManager : SingletonBehavior<SkillSelectManager>, IManager
     {
+        //定義部
         private Skill currentSkill;
         private List<UnitBase> selectUnits = new List<UnitBase>();
         private int selectCount;
         private bool forceSelect;
-        private delegate bool SelectedUnitFilter(UnitBase unit);
-        private event SelectedUnitFilter filter;
+        public delegate bool SelectedUnitFilter(UnitBase unit);
+        public event SelectedUnitFilter Filter;
         private bool isRunning;
+        //定数
+        private const int InvalidSelectionCount = -100;
+        //プロパティ
         public bool IsRunning
         {
             get
             {
-                return isRunning && BattleSceneManager.instance.IsRunning;
+                return isRunning;
             }
             set
             {
@@ -34,35 +38,21 @@ namespace Contest
         {
             get
             {
-                if (currentSkill != null)
+                if (currentSkill == null) return -100;
+
+                switch (currentSkill.skillData.Pattern)
                 {
-                    if (FLG.FLGCheck((uint)currentSkill.Target, (uint)TargetingPateren.Solo))
-                    {
-                        return 1;
-                    }
-                    else if (FLG.FLGCheck((uint)currentSkill.Target, (uint)TargetingPateren.Duo))
-                    {
-                        return 2;
-                    }
-                    else if (FLG.FLGCheck((uint)currentSkill.Target, (uint)TargetingPateren.Trio))
-                    {
-                        return 3;
-                    }
-                    else if (FLG.FLGCheck((uint)currentSkill.Target, (uint)TargetingPateren.All))
-                    {
-                        if (FLG.FLGCheck((uint)currentSkill.parent.parent.MyUnitType, (uint)(UnitType.Friend | UnitType.FriendAI)))
-                        {
-                            return BattleSceneManager.instance.Enemy;
-                        }
-                        else
-                        {
-                            return BattleSceneManager.instance.Friend;
-                        }
-                    }
+                    case TargetingPattern.Solo: return 1;
+                    case TargetingPattern.Duo: return 2;
+                    case TargetingPattern.Trio: return 3;
+                    case TargetingPattern.All:
+                        return (FLG.FLGCheck((uint)currentSkill.parent.parent.MyUnitType, (uint)(UnitType.Friend | UnitType.FriendAI))) ?
+                               BattleSceneManager.instance.Enemy : BattleSceneManager.instance.Friend;
+                    default: return InvalidSelectionCount;
                 }
-                return -100;
             }
         }
+        //処理部
         // Awake メソッドで初期化
         protected override void Awake()
         {
@@ -78,13 +68,12 @@ namespace Contest
         {
             currentSkill = skill;
             selectCount = SelectCount;
-            selectUnits.Clear();
-            filter = null;
+            ResetList();
+            Filter = null;
             IsRunning = true;
             InSelecting = true;
-
             // 必要に応じてUIを表示
-            SelectionUI.Instance.Show();
+            SelectionUI.instance.Show();
         }
 
         /// <summary>
@@ -94,14 +83,14 @@ namespace Contest
         {
             if (InSelecting && selectUnits != null)
             {
-                currentSkill.Notyfy_Selected(selectUnits);
+                currentSkill.InvokeSkill(selectUnits);
                 currentSkill = null;
                 IsRunning = false;
                 InSelecting = false;
-                selectUnits.Clear();
+                ResetList();
             }
             // 必要に応じてUIを非表示
-            SelectionUI.Instance.Hide();
+            SelectionUI.instance.Hide();
         }
 
         /// <summary>
@@ -109,37 +98,40 @@ namespace Contest
         /// </summary>
         public void MakingFilter()
         {
-            TargetingPateren pateren = currentSkill.Target;
+            TargetingPattern pattern = currentSkill.skillData.Pattern;
             UnitBase unit = currentSkill.parent.parent;
-            if (FLG.FLGCheck((uint)pateren, (uint)TargetingPateren.Friend))
             {
-                if (FLG.FLGCheck((uint)unit.MyUnitType, (uint)UnitType.Friend | (uint)UnitType.FriendAI))
+                if (FLG.FLGCheck((uint)pattern, (uint)TargetingPattern.Friend))
                 {
-                    filter += Target.IsEnemy;
-                }
-                else
-                {
-                    filter += Target.IsFriend;
+                    if (FLG.FLGCheck((uint)unit.MyUnitType, (uint)UnitType.Friend | (uint)UnitType.FriendAI))
+                    {
+                        Filter += Target.IsEnemy;
+                    }
+                    else
+                    {
+                        Filter += Target.IsFriend;
+                    }
                 }
             }
         }
 
         private void Update()
         {
-            if (IsRunning && Input.GetMouseButtonDown(0) && currentSkill != null && selectUnits.Count <= selectCount)
+            if (!IsRunning) { return; }
+            if (Input.GetMouseButtonDown(0) && currentSkill != null && selectUnits.Count < selectCount)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 UnitBase unit;
                 if (Physics.Raycast(ray, out hit) && hit.collider.TryGetComponent<UnitBase>(out unit))
                 {
-                    if (filter.Invoke(unit))
+                    if (Filter?.Invoke(unit) == true)
                     {
                         if (!selectUnits.Contains(unit))
                         {
                             selectUnits.Add(unit);
                             //unit.SetSelected(true); // ビジュアルフィードバック
-                            ParticleManager.MakeParticle(ParticleType.HighLight, ParticleOptions.Fitting, unit.gameObject);
+                            ParticleManager.MakeParticle(ParticleType.HighLight, AnimationOptions.Fitting, unit.gameObject);
                         }
                         else
                         {
@@ -169,11 +161,11 @@ namespace Contest
             // コールバックを通じて選択されたユニットをスキルに返す
 
             // 必要に応じてクリーンアップ
-            selectUnits.Clear();
+            ResetList();
             currentSkill = null;
 
             // 必要に応じてUIを非表示
-            SelectionUI.Instance.Hide();
+            SelectionUI.instance.Hide();
         }
 
         /// <summary>
@@ -181,7 +173,7 @@ namespace Contest
         /// </summary>
         public void CancelSelection()
         {
-            selectUnits.Clear();
+            ResetList();
             if (forceSelect) { return; }
             IsRunning = false;
             InSelecting = false;
@@ -190,7 +182,7 @@ namespace Contest
             // キャンセル時のフィードバックをここに追加
 
             // 必要に応じてUIを非表示
-            SelectionUI.Instance.Hide();
+            SelectionUI.instance.Hide();
         }
 
         public void ResetList()

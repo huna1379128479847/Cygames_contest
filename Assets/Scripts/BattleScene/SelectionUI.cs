@@ -5,8 +5,6 @@ namespace Contest
 {
     public class SelectionUI : SingletonBehavior<SelectionUI>
     {
-        public static SelectionUI Instance { get; private set; }
-
         [SerializeField] private GameObject selectionPanel;
         [SerializeField] private Button confirmButton;
         [SerializeField] private Button cancelButton;

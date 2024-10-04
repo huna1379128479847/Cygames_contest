@@ -28,7 +28,7 @@ namespace Contest
         {
             get
             {
-                return isRunning && !unitBases[idx].InAction && !SelectManager.instance.InSelecting;
+                return isRunning && !unitBases[idx].InAction && !SkillSelectManager.instance.InSelecting;
             }
             set
             {
@@ -69,13 +69,13 @@ namespace Contest
                 return enemy;
             }
         }
-        public void Execute(List<object> datas)
+        public void Execute(List<GameObject> datas)
         {
             Notify_StartInitialize();
-            foreach (object obj in datas)
+            foreach (var obj in datas)
             {
 
-                if (obj is GameObject && (obj as GameObject).TryGetComponent<UnitBase>(out var unitBase) == true)
+                if (obj.TryGetComponent<UnitBase>(out var unitBase) == true)
                 {
                     units.Add(obj as GameObject);
                     unitBases.Add(unitBase);

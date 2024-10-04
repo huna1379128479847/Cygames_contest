@@ -234,6 +234,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 723185549}
+  - component: {fileID: 723185553}
+  - component: {fileID: 723185552}
+  - component: {fileID: 723185551}
+  - component: {fileID: 723185550}
   m_Layer: 0
   m_Name: BattleScene
   m_TagString: Untagged
@@ -256,6 +260,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &723185550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723185548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ec649dc4faec0e4485a81707033bf4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitData: {fileID: 11400000, guid: 3fe9337958753fd4baac6e1d64b6d9db, type: 2}
+--- !u!114 &723185551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723185548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65286cf7bb8e8f64ea2b9367e05f4b9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectionPanel: {fileID: 0}
+  confirmButton: {fileID: 0}
+  cancelButton: {fileID: 0}
+--- !u!114 &723185552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723185548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eec4859fa22030b47907656020f24440, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &723185553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 723185548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c034b1f214a83874ca1ca9d083a2a908, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &774006215
 GameObject:
   m_ObjectHideFlags: 0
