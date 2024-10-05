@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Contest
 {
+    /// <summary>
+    /// 敵ユニットのデータを定義するScriptableObjectクラス。
+    /// 敵ユニットは行動パターン (BehaviorPattern) を持ち、エディタから設定できる。
+    /// </summary>
     [CreateAssetMenu(menuName = "敵ユニット")]
     public class Enemy : UnitData
     {
-        // フィールド
+        // 敵の行動パターン (攻撃的、防御的、支援型など)
         [SerializeField] private BehaviorPattern enemyPattern;
 
-        // プロパティ
+        /// <summary>
+        /// 敵の行動パターンを取得するプロパティ。
+        /// </summary>
         public BehaviorPattern EnemyPattern => enemyPattern;
     }
 }

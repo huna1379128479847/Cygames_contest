@@ -16,6 +16,7 @@ namespace Contest
         protected Dictionary<Guid, int> effectAmount;
         protected int defaultAmount;
         protected int currentAmount;
+        protected bool needDirty;
         private bool isDirty; // 変更フラグ
 
         public virtual int CurrentAmount
@@ -23,7 +24,7 @@ namespace Contest
             get
             {
                 // Return the latest computed amount
-                if (isDirty)
+                if (isDirty && !needDirty)
                 {
                     RecalculateAmount();
                 }
@@ -44,15 +45,7 @@ namespace Contest
         }
 
         public int DefaultAmount => defaultAmount;
-        public StatusBase(int amount)
-        {
-            defaultAmount = amount;
-            currentAmount = amount; // 初期値設定
-            magnification = new Dictionary<Guid, float>();
-            effectAmount = new Dictionary<Guid, int>();
-            isDirty = true; // 初期状態は変更があると設定
-            id = Guid.NewGuid();
-        }
+        
 
         // ステータスの値を再計算
         private void RecalculateAmount()
@@ -95,6 +88,17 @@ namespace Contest
                 isDirty = true; // 変更があったことをフラグで示す
             }
 
+        }
+
+        public StatusBase(int amount, bool needDirty = false)
+        {
+            defaultAmount = amount;
+            currentAmount = amount; // 初期値設定
+            magnification = new Dictionary<Guid, float>();
+            effectAmount = new Dictionary<Guid, int>();
+            isDirty = true; // 初期状態は変更があると設定
+            id = Guid.NewGuid();
+            this.needDirty = needDirty;
         }
     }
 }

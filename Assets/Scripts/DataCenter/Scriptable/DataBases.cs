@@ -7,34 +7,40 @@ using UnityEngine;
 
 namespace Contest
 {
+    /// <summary>
+    /// 基本データを持つクラス。名前と説明を管理。
+    /// ScriptableObjectを継承しているので、Unityエディタからインスタンスを作成して管理できる。
+    /// </summary>
     public class DataBase : ScriptableObject
     {
+        // データの名前
         [SerializeField] private string _name; // 名前
+        // データの説明
         [SerializeField] private string description; // 説明
 
         /// <summary>
         /// データの名前
         /// </summary>
-        public string Name
-        {
-            get => _name;
-            set => _name = value;
-        }
+        public string Name => _name;
 
         /// <summary>
         /// データの説明
         /// </summary>
-        public string Description
-        {
-            get => description;
-            set => description = value;
-        }
+        public string Description => description;
     }
 
+    /// <summary>
+    /// タグを持つデータを表現するクラス。
+    /// 基本データに加えて、タグのリストを持つ。
+    /// </summary>
     public class HasTags : DataBase
     {
+        // タグのリストをシリアライズしてUnityエディタで管理
         [SerializeField] private List<string> tags;
 
+        /// <summary>
+        /// データに紐づくタグのリスト
+        /// </summary>
         public List<string> Tags => tags;
     }
 }
