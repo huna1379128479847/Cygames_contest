@@ -28,7 +28,7 @@ namespace Contest
         {
             get
             {
-                return isRunning && !unitBases[idx].InAction && !SelectManager.instance.InSelecting;
+                return isRunning && !unitBases[idx].InAction;
             }
             set
             {
