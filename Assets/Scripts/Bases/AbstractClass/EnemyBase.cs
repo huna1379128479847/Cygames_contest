@@ -1,32 +1,23 @@
-﻿using JetBrains.Annotations;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Contest
 {
     public class EnemyBase : UnitBase, IEnemy
     {
-        BehaviorPattern pattern;
+        protected BehaviorPattern pattern;
+
+        public BehaviorPattern BehaviorPattern => pattern;
         SkillHandler skillTracker;
-        public BehaviorPattern BehaviorPattern
-        {
-            get
-            {
-                return pattern;
-            }
-        }
         protected override void Awake()
         {
             base.Awake();
-            if (unitData.GetType() == typeof(Enemy))
+            if (Helpers.TryChangeType(unitData, out Enemy enemy))
             {
-                pattern = (unitData as Enemy).EnemyPattern;
+                pattern = enemy.EnemyPattern;
+            }
+            else
+            {
+                Debug.LogError($"{unitData.Name}の型が不正です。:{gameObject.name}");
             }
         }
         //適宜オーバーライドして書き換えてね

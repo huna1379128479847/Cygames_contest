@@ -36,11 +36,16 @@ namespace Contest
     public class HasTags : DataBase
     {
         // タグのリストをシリアライズしてUnityエディタで管理
-        [SerializeField] private List<string> tags;
+        [SerializeField] private HashSet<string> tags;
 
         /// <summary>
         /// データに紐づくタグのリスト
         /// </summary>
-        public List<string> Tags => tags;
+        public HashSet<string> Tags => tags;
+
+        public bool HasTag(string tag)
+        {
+            return tags.Contains(tag);
+        }
     }
 }

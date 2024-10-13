@@ -8,66 +8,65 @@ namespace Contest
     /// ユニットに付与される効果 (バフ・デバフ) を管理するクラス。
     /// 効果はタイミングごとに分類され、それに応じて実行、追加、削除される。
     /// </summary>
-    public class EffectHandler
+    public class EffectHandler : MonoBehaviour
     {
-        // 親ユニット
-        public UnitBase parent;
-
-        // 付与されている効果を管理するフラグ (バフ・デバフの種別)
-        private EffectFlgs haveflgs = EffectFlgs.None;
-        // フラグが変更されたかどうかを追跡
-        private bool flgsDirty = false;
-
-        /// <summary>
-        /// タイミングごとに効果を分類して管理する辞書。
-        /// キーはEffectTiming、値は固有IDと効果のペア。
-        /// </summary>
-        public Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>> effectsByTiming = new Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>>();
-
+        private Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>> effectByTiming 
+            = new Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>>();
         // 現在のフラグを取得するプロパティ。フラグが変更された場合は再計算する。
+        private EffectFlgs haveFlgs = EffectFlgs.None;
+        private bool flgsDirty = false;
+        // 親ユニット
+        public UnitBase ParentUnit { get; private set; }
         public EffectFlgs HaveFlgs
         {
             get
             {
                 if (flgsDirty)
                 {
-                    MakeFlgs();
+                    RecalculateFlags();
                     flgsDirty = false;
                 }
-                return haveflgs;
+                return haveFlgs;
             }
+        }
+        
+        // 付与されている効果を管理するタイミングごとの辞書
+        public Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>> EffectsByTiming { get; private set; }
+                    = new Dictionary<EffectTiming, Dictionary<Guid, StatusEffect>>();
+        /// <summary>
+        /// 初期化処理。親ユニットを設定する。
+        /// </summary>
+        /// <param name="unit">親ユニット。</param>
+        public void Initialize(UnitBase unit)
+        {
+            ParentUnit = unit ?? throw new ArgumentNullException(nameof(unit));
         }
 
         /// <summary>
         /// 付与されている効果フラグを計算して更新する。
         /// </summary>
-        public void MakeFlgs()
+        private void RecalculateFlags()
         {
-            haveflgs = EffectFlgs.None;
-            foreach (var effects in effectsByTiming.Values)
+            haveFlgs = EffectFlgs.None;
+            foreach (var timingEffects in EffectsByTiming.Values)
             {
-                foreach (var effect in effects.Values)
+                foreach (var effect in timingEffects.Values)
                 {
-                    EffectFlgs effectFlgs = effect.Flgs;
-                    if (!FLG.FLGCheck((uint)haveflgs, (uint)effectFlgs))
-                    {
-                        FLG.FLGUp((uint)haveflgs, (uint)effectFlgs);
-                    }
+                    haveFlgs |= effect.Flags;
                 }
             }
-            Debug.Log(haveflgs.ToString());
+            Debug.Log($"Updated Effect Flags: {haveFlgs}");
         }
 
         /// <summary>
         /// 指定されたタイミングの効果を実行する。
         /// </summary>
         /// <param name="effectTiming">効果を発動するタイミング。</param>
-        public void EffectExecution(EffectTiming effectTiming)
+        public void ExecuteEffects(EffectTiming effectTiming)
         {
-            // 指定されたタイミングの効果を実行
-            if (effectsByTiming.ContainsKey(effectTiming))
+            if (EffectsByTiming.ContainsKey(effectTiming))
             {
-                var effectsToExecute = new List<StatusEffect>(effectsByTiming[effectTiming].Values);
+                var effectsToExecute = new List<StatusEffect>(EffectsByTiming[effectTiming].Values);
                 foreach (var effect in effectsToExecute)
                 {
                     effect.ExecuteEffect();
@@ -79,38 +78,37 @@ namespace Contest
         /// 新しい効果をユニットに付与する。
         /// </summary>
         /// <param name="effect">付与する効果。</param>
-        public void GiveEffect(StatusEffect effect)
+        public void AddEffect(StatusEffect effect)
         {
-            if (effect == null) return; // 無効な効果は無視
+            if (effect == null)
+                throw new ArgumentNullException(nameof(effect));
 
-            // 効果のタイミングごとに分類されているか確認し、なければ新規作成
-            if (!effectsByTiming.ContainsKey(effect.Timing))
+            if (!EffectsByTiming.ContainsKey(effect.Timing))
             {
-                effectsByTiming[effect.Timing] = new Dictionary<Guid, StatusEffect>();
+                EffectsByTiming[effect.Timing] = new Dictionary<Guid, StatusEffect>();
             }
 
-            // 指定されたタイミングの効果グループを取得
-            var effectGroup = effectsByTiming[effect.Timing];
+            var effectGroup = EffectsByTiming[effect.Timing];
 
-            // 既存の効果がある場合は更新、ない場合は新規追加
             if (effectGroup.ContainsKey(effect.ID))
             {
                 var existingEffect = effectGroup[effect.ID];
-
-                // 既存の効果に対して、マージが必要か確認し、必要なら更新
-                if (FLG.FLGCheck((uint)existingEffect.Flgs, (uint)EffectFlgs.ShouldMerge))
+                // 既存の効果とマージするかどうかの判定
+                if (existingEffect.Flags.HasFlag(EffectFlgs.ShouldMerge))
                 {
-                    existingEffect.UpdateStatsEffect();
+                    existingEffect.UpdateEffect();
+                }
+                else
+                {
+                    Debug.LogWarning($"Effect {effect.Name} already exists and cannot be merged.");
                 }
             }
             else
             {
-                // 新しい効果を追加し、Parentとしてこのオブジェクトを設定
-                effectGroup[effect.ID] = effect;
-                effect.Parent = this;
+                effectGroup.Add(effect.ID, effect);
+                effect.Apply();
             }
 
-            // フラグの再計算を要求
             flgsDirty = true;
         }
 
@@ -120,19 +118,21 @@ namespace Contest
         /// <param name="effect">削除する効果。</param>
         public void RemoveEffect(StatusEffect effect)
         {
-            if (effect == null) return;
+            if (effect == null)
+                throw new ArgumentNullException(nameof(effect));
 
-            // タイミングごとの効果グループから効果を削除
-            if (effectsByTiming.TryGetValue(effect.Timing, out var effectGroup) && effectGroup.Remove(effect.ID))
+            if (EffectsByTiming.TryGetValue(effect.Timing, out var effectGroup))
             {
-                if (effectGroup.Count == 0)
+                if (effectGroup.Remove(effect.ID))
                 {
-                    effectsByTiming.Remove(effect.Timing);
+                    effect.Remove();
+                    if (effectGroup.Count == 0)
+                    {
+                        EffectsByTiming.Remove(effect.Timing);
+                    }
+                    flgsDirty = true;
                 }
             }
-
-            // フラグの再計算を要求
-            flgsDirty = true;
         }
 
         /// <summary>
@@ -140,7 +140,15 @@ namespace Contest
         /// </summary>
         public void ClearAllEffects()
         {
-            effectsByTiming.Clear();
+            foreach (var timingEffects in EffectsByTiming.Values)
+            {
+                foreach (var effect in timingEffects.Values)
+                {
+                    effect.Remove();
+                }
+            }
+            EffectsByTiming.Clear();
+            flgsDirty = true;
         }
 
         /// <summary>
@@ -150,11 +158,11 @@ namespace Contest
         /// <returns>一致する効果があれば返す。なければnull。</returns>
         public StatusEffect GetFirstEffect(string tag)
         {
-            foreach (var effectUnique in effectsByTiming.Values)
+            foreach (var timingEffects in EffectsByTiming.Values)
             {
-                foreach (var effect in effectUnique.Values)
+                foreach (var effect in timingEffects.Values)
                 {
-                    if (effect._data.Tags.Contains(tag))
+                    if (effect.Data.Tags.Contains(tag))
                     {
                         return effect;
                     }
@@ -167,29 +175,17 @@ namespace Contest
         /// 指定された効果を検索して返す。
         /// </summary>
         /// <param name="statusEffect">検索する効果。</param>
-        /// <returns>一致する効果があれば返す。なければnull。</returns>
-        public StatusEffect GetStatusEffect(StatusEffect statusEffect)
+        /// <returns>一致する効果があればtrue。なければfalse。</returns>
+        public bool GetStatusEffect(StatusEffect statusEffect)
         {
-            foreach (var effectUnique in effectsByTiming.Values)
+            foreach (var effect in EffectsByTiming[statusEffect.Data.Timing].Values)
             {
-                foreach (var effect in effectUnique.Values)
+                if (effect.Name == statusEffect.Name)
                 {
-                    if (effect._data.Name == statusEffect.Name)
-                    {
-                        return effect;
-                    }
+                    return true;
                 }
             }
-            return null;
-        }
-
-        /// <summary>
-        /// コンストラクタ。ユニットを指定して初期化。
-        /// </summary>
-        /// <param name="unit">管理するユニット。</param>
-        public EffectHandler(UnitBase unit)
-        {
-            parent = unit;
+            return false;
         }
     }
 }

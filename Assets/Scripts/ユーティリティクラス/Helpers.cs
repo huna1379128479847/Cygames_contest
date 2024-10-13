@@ -48,5 +48,20 @@ namespace Contest
         {
             return values.Values.ToList();
         }
+
+        public static bool TryChangeType<T, V>(T item, out V result)
+        where T : class // T はクラス型であることを指定
+        where V : class, T // V はクラス型で、かつ T の派生型（または同じ型）であることを指定
+        {
+            result = null;
+            if (item is V)
+            {
+                // item を V 型にキャストする
+                result = item as V;
+                return true; // キャスト成功
+            }
+            return false; // キャスト失敗
+        }
+
     }
 }

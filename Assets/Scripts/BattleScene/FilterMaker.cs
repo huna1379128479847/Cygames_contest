@@ -38,7 +38,7 @@ namespace Contest
                 string[] item = tag.Split(".");
                 if (item[0] == "ユニット")
                 {
-                    if (!unit.unitData.Tags.Contains(item[1]))
+                    if (!unit.unitData.HasTag(item[1]))
                     {
                         return false;
                     }

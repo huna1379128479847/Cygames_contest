@@ -77,5 +77,11 @@ namespace Contest
         {
             return ~flg;
         }
+
+        public static uint FLGToggle(uint flg, uint checkFlg)
+        {
+            return flg ^ checkFlg;  // 指定したフラグをトグルする
+        }
+
     }
 }

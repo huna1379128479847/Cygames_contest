@@ -80,12 +80,12 @@ namespace Contest
         string Name { get; } // 効果の名前
         int Duration { get; } // 効果の持続時間
         EffectTiming Timing { get; } // 効果が発動するタイミング
-        EffectFlgs Flgs { get; } // 効果のフラグ（特徴や条件）
+        EffectFlgs Flags { get; } // 効果のフラグ（特徴や条件）
         void Apply(); // 効果を適用
         void Remove(); // 効果を取り除く
-        void UpdateStatsEffect(); // ステータスの影響を更新
+        void UpdateEffect(); // ステータスの影響を更新
         void DecreaseDuration(int time = 1); // 効果の残り時間を減らす
-        void ExecuteEffect(Action action = null); // 効果を実行
+        void ExecuteEffect(); // 効果を実行
     }
 
     // バトル中のイベントを定義するインターフェース。特定タイミングでの処理を管理。
@@ -93,5 +93,66 @@ namespace Contest
     {
         int Priority { get; } // イベントの優先度
         void Invoke(); // イベントを発動
+    }
+
+    /// <summary>
+    /// キーと対応する型を保持するためのインターフェース。
+    /// </summary>
+    /// <typeparam name="T">キーの型。参照型でなければなりません。</typeparam>
+    public interface IFactoryHolder<T> where T : class
+    {
+        /// <summary>
+        /// キーと型の対応を登録します。
+        /// </summary>
+        /// <param name="key">キーとなるオブジェクト。</param>
+        void RegisterFactory(T key);
+
+        /// <summary>
+        /// 指定したキーに対応する型を取得します。
+        /// </summary>
+        /// <param name="key">キーとなるオブジェクト。</param>
+        /// <returns>対応する型。キーが存在しない場合は null。</returns>
+        IFactory GetFactoryForKey(T key);
+
+        /// <summary>
+        /// 指定したキーに対応する型を辞書から削除します。
+        /// </summary>
+        /// <param name="key">削除するキー。</param>
+        /// <returns>削除が成功した場合は true、それ以外は false。</returns>
+        bool RemoveFactory(T key);
+
+        /// <summary>
+        /// 指定したキーが辞書に存在するかどうかを確認します。
+        /// </summary>
+        /// <param name="key">確認するキー。</param>
+        /// <returns>キーが存在する場合は true、それ以外は false。</returns>
+        bool ContainsKey(T key);
+    }
+
+    public interface IFactoryHolders
+    {
+        Dictionary<Type, IFactoryHolder<IUseCutomClass>> FactoryHolders { get; }
+
+        bool FinishedInit { get; }
+
+        IFactory GetFactory(IUseCutomClass data);
+    }
+
+    /// <summary>
+    /// スキルやエフェクトをつくるファクトリーであることを示すためのインターフェース
+    /// </summary>
+    public interface IFactory
+    {
+        IUniqueThing CreateClass(DataBase data, IHandler parent);
+    }
+
+    public interface IHandler
+    {
+        UnitBase Parent { get; }
+    }
+
+    public interface IUseCutomClass
+    {
+        string ClassName { get; }
     }
 }

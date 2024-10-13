@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace Contest
 {
@@ -13,90 +11,50 @@ namespace Contest
     /// </summary>
     public abstract class StatusEffect : IUniqueThing, IEffect
     {
+        public delegate void RemoveEffect(Guid guid);
+        public event RemoveEffect RemoveEvent;
+
         // 状態異常のデータ (持続時間や効果など)
-        public StatusEffectData _data;
+        public StatusEffectData Data { get; protected set; }
         // 状態異常を管理する親ハンドラー
-        protected EffectHandler parent;
-        private string name;
-        private string description;
-        private int duration; // 状態異常の持続時間
-
-        /// <summary>
-        /// 状態異常の名前を取得するプロパティ。
-        /// </summary>
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-        }
-
-        /// <summary>
-        /// 状態異常の持続時間 (ターン数) を取得するプロパティ。
-        /// </summary>
-        public int Duration
-        {
-            get
-            {
-                return duration;
-            }
-        }
-
-        // ユニークなIDを返す
+        protected EffectHandler ParentHandler { get; private set; }
+        // ユニークID
         public Guid ID { get; protected set; }
+
+        // 状態異常の名前
+        public string Name => Data.Name;
+        // 状態異常の説明
+        public string Description => Data.Description;
+        // 状態異常の持続時間 (ターン数)
+        public int Duration { get; protected set; }
 
         /// <summary>
         /// 状態異常が持続しているかどうかを確認するプロパティ。
         /// 持続時間が0以下であれば期限切れと判断する。
         /// </summary>
-        public virtual bool IsExpired
-        {
-            get
-            {
-                return Duration <= 0;
-            }
-        }
+        public virtual bool IsExpired => Duration <= 0;
 
         /// <summary>
-        /// 状態異常を管理する親ハンドラーを取得または設定する。
-        /// 一度設定した後は変更できない。
+        /// 状態異常の効果が発動するタイミングを取得するプロパティ。
         /// </summary>
-        public EffectHandler Parent
-        {
-            get
-            {
-                return parent;
-            }
-            set
-            {
-                if (parent == null)
-                {
-                    parent = value;
-                }
-            }
-        }
+        public EffectTiming Timing => Data.Timing;
 
         /// <summary>
-        /// 状態異常の効果が発動するタイミングを取得する。
+        /// 状態異常のフラグ (バフ・デバフの特徴) を取得するプロパティ。
         /// </summary>
-        public EffectTiming Timing
-        {
-            get
-            {
-                return _data.Timing;
-            }
-        }
+        public EffectFlgs Flags => Data.Flags;
 
         /// <summary>
-        /// 状態異常のフラグ (バフ・デバフの特徴) を取得する。
+        /// コンストラクタ。状態異常データと親ハンドラーを指定して初期化する。
         /// </summary>
-        public EffectFlgs Flgs
+        /// <param name="data">状態異常データ。</param>
+        /// <param name="parentHandler">親の効果ハンドラー。</param>
+        public StatusEffect(StatusEffectData data, IHandler parentHandler)
         {
-            get
-            {
-                return _data.Effect;
-            }
+            Data = data ?? throw new ArgumentNullException(nameof(data));
+            ParentHandler = parentHandler as EffectHandler ?? throw new ArgumentNullException(nameof(parentHandler));
+            ID = Guid.NewGuid();
+            Duration = Data.Duration;
         }
 
         /// <summary>
@@ -105,15 +63,20 @@ namespace Contest
         /// </summary>
         public virtual void Apply()
         {
+            // 例
+            // StatusBase speed = ParentHandler.ParentUnit.statusTracker.CurrentSpeed;
+            // speed.AddEffect(ID, +0.1f);
+            // RemoveEvent += speed.RemoveEffect;
         }
 
         /// <summary>
         /// 状態異常が更新される時に呼び出されるメソッド。
-        /// デフォルトでは持続時間を`_data`から設定。
+        /// デフォルトでは持続時間を`Data`から設定。
         /// </summary>
-        public virtual void UpdateStatsEffect()
+        public virtual void UpdateEffect()
         {
-            duration = _data.Duration;
+            // 持続時間をリセットまたは更新
+            Duration = Data.Duration;
         }
 
         /// <summary>
@@ -122,21 +85,25 @@ namespace Contest
         /// </summary>
         public virtual void Remove()
         {
+            RemoveEvent?.Invoke(ID);
         }
 
         /// <summary>
         /// 状態異常の持続時間を減少させるメソッド。
         /// 残りの持続時間が0以下になった場合、状態異常を削除する。
         /// </summary>
+        /// <param name="time">減少させるターン数。</param>
         public virtual void DecreaseDuration(int time = 1)
         {
-            if (FLG.FLGCheck((uint)Flgs, (uint)EffectFlgs.Duration))
+            if (Flags.HasFlag(EffectFlgs.Duration))
             {
-                duration -= time;
-                if (Duration < 0) duration = 0;
+                Duration -= time;
+                if (Duration < 0)
+                    Duration = 0;
+
                 if (IsExpired)
                 {
-                    parent.RemoveEffect(this);
+                    ParentHandler.RemoveEffect(this);
                 }
             }
         }
@@ -146,6 +113,6 @@ namespace Contest
         /// 派生クラスで具体的な処理を実装する。
         /// </summary>
         /// <param name="action">状態異常に関連するアクション (オプション) 。</param>
-        public abstract void ExecuteEffect(Action action = null);
+        public abstract void ExecuteEffect();
     }
 }

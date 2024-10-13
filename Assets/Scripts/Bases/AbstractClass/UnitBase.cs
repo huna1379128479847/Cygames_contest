@@ -46,6 +46,16 @@ namespace Contest
         // アクション完了を通知するイベント
         public event Action OnActionComplete;
 
+        // デリゲート
+        public delegate void PreApplyDamage(DamageInfo damageInfo);
+        public delegate void PostApplyDamage(DamageInfo damageInfo);
+        public delegate void Attack(List<DamageInfo> damageInfo);
+
+        // イベント
+        public event PreApplyDamage PreApplyDamageEvent;
+        public event PostApplyDamage PostApplyDamageEvent;
+        public event Attack AttackEvent;
+
         /// <summary>
         /// ユニークなIDを返すプロパティ。
         /// </summary>
@@ -110,11 +120,7 @@ namespace Contest
             get
             {
                 if (IsDead) return false;
-                if (effectHandler.HaveFlgs.HasFlag(EffectFlgs.Controll))
-                {
-                    return false;
-                }
-                return true;
+                return !FLG.FLGCheck((uint)effectHandler.HaveFlgs, (uint)EffectFlgs.Controll);
             }
         }
 
@@ -123,6 +129,7 @@ namespace Contest
         /// </summary>
         public void Notify_ActionComplete()
         {
+            inAction = false;
             OnActionComplete?.Invoke();
         }
 
@@ -133,23 +140,20 @@ namespace Contest
         {
             id = Guid.NewGuid();
             statusTracker = new StatusTracker(this);
-            skillHandler = GetComponent<SkillHandler>();
-            if (skillHandler == null)
-            {
-                Debug.LogError("SkillHandler component is missing.");
-            }
-            skillHandler.parent = this;
-            myUnitType = unitData.UnitType;
-
+            statusTracker.CurrentHP.OnDeadEvent += DeadBehavior;
             effectHandler = GetComponent<EffectHandler>();
             if (effectHandler == null)
             {
                 Debug.LogError("EffectHandler component is missing.");
             }
-            effectHandler.parent = this;
-
-            // スキルハンドラーのスキルリストを初期化
+            effectHandler.Initialize(this);
+            skillHandler = GetComponent<SkillHandler>();
+            if (skillHandler == null)
+            {
+                Debug.LogError("SkillHandler component is missing.");
+            }
             skillHandler.InitSkillList(unitData.SkillDatas);
+            myUnitType = unitData.UnitType;
         }
 
         /// <summary>
@@ -184,7 +188,7 @@ namespace Contest
 
             if (firstExecute)
             {
-                effectHandler.EffectExecution(EffectTiming.After);
+                effectHandler.ExecuteEffects(EffectTiming.After);
                 firstExecute = false;
             }
 
@@ -204,6 +208,7 @@ namespace Contest
             // アクションが完了するまで待機
             inAction = true;
             yield return new WaitUntil(() => !inAction);
+            AttackEvent?.Invoke(selectedSkill.currentResult);
 
             // 行動が完了したらターンを終了
             ExitTurn();
@@ -254,23 +259,18 @@ namespace Contest
         /// </summary>
         /// <param name="info">ダメージ情報。</param>
         /// <param name="isFix">固定ダメージかどうか。</param>
-        public virtual void TakeDamage(DamageInfo info, bool isFix)
+        public virtual void TakeDamage(DamageInfo info)
         {
             Pre_TakeDamage();
-            float damage = info.skill.DamageAmount;
-            float finalDamage = damage;
-            if (!isFix)
-            {
-                finalDamage = Mathf.Clamp(damage - info.damageTaker.statusTracker.Def.CurrentAmount, damage / 4, 99999);
-            }
-            if (info.isBad) finalDamage *= -1;
-            statusTracker.CurrentHP.CurrentAmount += (int)finalDamage;
-            Post_TakeDamage();
+            PreApplyDamageEvent?.Invoke(info);
+            
 
             if (IsDead)
             {
                 DeadBehavior();
             }
+            Post_TakeDamage();
+            PostApplyDamageEvent?.Invoke(info);
         }
 
         /// <summary>
@@ -290,15 +290,6 @@ namespace Contest
         public List<SkillData> GetSkillDatas()
         {
             return unitData.SkillDatas;
-        }
-
-        /// <summary>
-        /// 効果が完了したことを通知するメソッド。
-        /// </summary>
-        /// <param name="effect">完了した効果。</param>
-        public void OnEffectCompleted(StatusEffect effect)
-        {
-            inAction = false;
         }
     }
 }

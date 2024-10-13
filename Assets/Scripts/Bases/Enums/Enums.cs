@@ -66,7 +66,7 @@ namespace Contest
 
     // スキルの種類を定義するフラグ。攻撃、防御、バフ、デバフなどをビット演算で管理。
     [Flags]
-    public enum SkillFlgs
+    public enum SkillTypes
     {
         None = 0,
         Attack = 1 << 0,            // 攻撃スキル
@@ -76,6 +76,19 @@ namespace Contest
         Support = Buff | Debuff,    // サポートスキル (バフ・デバフの両方を持つ)
     }
 
+    [Flags]
+    public enum DamageOptions
+    {
+        None = 0,
+        IsDamage = 1 << 0,              // ダメージかどうか（trueの場合計算結果が反転する）
+        IsFix = 1 << 1,                 // 固定ダメージかどうか（会心および防御減衰などの処理を飛ばす）
+        IsPanetraitDefance = 1 << 2,    // 防御を無視するかどうか
+        ForceCrit = 1 << 3,             // 必ず会心するかどうか
+        ForceHit = 1 << 4,              // 必ず命中するかどうか
+        IsDot = 1 << 5,                 // 持続ダメージかどうか
+        IsHeal = 1 << 6,                // 回復かどうか
+        IsHot = IsDot | IsHeal,         // 持続回復かどうか
+    }
     // ターゲティングパターンを定義するフラグ。味方や敵、単体・複数、ランダムターゲットなどをビット演算で表現。
     [Flags]
     public enum TargetingPattern

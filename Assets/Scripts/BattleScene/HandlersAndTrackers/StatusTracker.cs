@@ -51,10 +51,11 @@ namespace Contest
             maxHp = new StatusBase(unitData.HP);
             maxMp = new StatusBase(unitData.MP);
             maxSpeed = new StatusBase(unitData.Speed);
+            speed = new StatusBase(unitData.Speed);
             atk = new StatusBase(unitData.Atk);
             def = new StatusBase(unitData.Def);
             hp = new StatusBase(unitData.HP, true);
-            mp = new StatusBase(unitData.MP, true);
+            mp = new StatusBase(unitData.MP);
         }
     }
 }

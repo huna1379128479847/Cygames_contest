@@ -9,13 +9,13 @@ namespace Contest
     /// ユニットのスキルを管理するクラス。
     /// スキルの追加、選択、実行、アニメーションの管理を行う。
     /// </summary>
-    public class SkillHandler : MonoBehaviour
+    public class SkillHandler : MonoBehaviour, IHandler
     {
         // スキルの辞書。キーはスキルのユニークID、値はスキルオブジェクト
         public Dictionary<Guid, Skill> skills = new Dictionary<Guid, Skill>();
 
         // スキルを持つユニット
-        public UnitBase parent;
+        private UnitBase parent;
 
         // 現在選択されているスキル
         public Skill currentSkill;
@@ -30,6 +30,8 @@ namespace Contest
                 return currentSkill != null && currentSkill.InAction;
             }
         }
+
+        public UnitBase Parent => parent;
 
         /// <summary>
         /// スキルを実行するメソッド。
@@ -72,21 +74,10 @@ namespace Contest
         {
             foreach (var skillData in skillDatas)
             {
-                // TypeHolderを使用してSkillDataに対応するTypeを取得
-                Type type = TypeHolder.GetTypeDictionary(skillData);
-                if (type == null)
+                IFactory skillFactory = BattleSceneManager.instance.FactoryHolders.GetFactory(skillData);
+                if (skillFactory != null)
                 {
-                    Debug.LogError($"Type for SkillData {skillData.ClassName} not found. Skipping.");
-                    continue;
-                }
-
-                // Skillのインスタンスを作成
-                // Skillクラスのコンストラクタは (SkillData, SkillHandler, MonoBehaviour) を想定
-                Skill skill = Activator.CreateInstance(type, skillData, this, this) as Skill;
-
-                // スキルを辞書に追加
-                if (skill != null)
-                {
+                    Skill skill = skillFactory.CreateClass(skillData, this) as Skill;
                     if (!skills.ContainsKey(skill.ID))
                     {
                         skills.Add(skill.ID, skill);
@@ -98,7 +89,7 @@ namespace Contest
                 }
                 else
                 {
-                    Debug.LogError($"Failed to create skill of type {type} for SkillData {skillData.ClassName}.");
+                    Debug.LogError($"Failed to create skill for SkillData {skillData.ClassName}.");
                 }
             }
         }

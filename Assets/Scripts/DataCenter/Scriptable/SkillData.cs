@@ -10,9 +10,9 @@ namespace Contest
     /// ターゲットパターンや追加効果 (バフ・デバフ) も設定可能。
     /// </summary>
     [CreateAssetMenu(menuName = "スキル")]
-    public class SkillData : HasTags
+    public class SkillData : HasTags, IUseCutomClass
     {
-        // カスタムクラス名を格納。特定のスキルに対応するクラス名を設定。
+        // IFactoryを継承したクラス名を格納。特定のスキルに対応するクラス名を設定。
         [SerializeField] private string className = "Skill";
         // スキルに必要なコスト
         [SerializeField, Min(0)] private int cost;
@@ -27,11 +27,13 @@ namespace Contest
         // スキルのターゲティングパターン (単体、範囲、ランダムなど)
         [SerializeField] private TargetingPattern pattern;
         // スキルにバフ・デバフ効果がある場合、そのデータを保持
-        [SerializeField] private StatusEffectData statusEffectData = null;
+        [SerializeField] private List<StatusEffectData> statusEffectDatas = new List<StatusEffectData>();
         // スキル発動時のアニメーションタイプを管理
         [SerializeField] private AnimationType animationType;
         // スキルに関連するフラグ (攻撃、防御、バフなどの種類を示す)
-        [SerializeField] private SkillFlgs skillFlgs;
+        [SerializeField] private SkillTypes skillTypes;
+        // 
+        [SerializeField] private DamageOptions damageOptions;
         // スキルに対するフィルタリング (例: 特定の条件でスキルが適用されるなど)
         [SerializeField] private List<SkillFilter> filter;
 
@@ -44,8 +46,9 @@ namespace Contest
         public bool IsAttack => isAttack;
         public bool IsBad => isBad;
         public TargetingPattern Pattern => pattern;
-        public StatusEffectData StatusEffectData => statusEffectData;
-        public SkillFlgs SkillFlgs => skillFlgs;
+        public List<StatusEffectData> StatusEffectDatas => statusEffectDatas;
+        public SkillTypes SkillTypes => skillTypes;
+        public DamageOptions DamageOptions => damageOptions;
         public AnimationType AnimationType => animationType;
     }
 }

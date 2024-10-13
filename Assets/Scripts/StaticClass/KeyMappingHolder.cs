@@ -11,6 +11,15 @@ namespace Contest
     {
         // KeyTypeとKeyCodeのマッピング (複数のKeyCodeを1つのKeyTypeに関連付ける)
         private static Dictionary<KeyType, List<KeyCode>> inputKeyType = new Dictionary<KeyType, List<KeyCode>>();
+        private readonly static Dictionary<KeyType, KeyCode> defaultKeyType = new Dictionary<KeyType, KeyCode>() 
+        {
+            { KeyType.Confirm, KeyCode.Z },
+            { KeyType.Cancel, KeyCode.X},
+            { KeyType.Up, KeyCode.UpArrow },
+            { KeyType.Down, KeyCode.DownArrow },
+            { KeyType.Right, KeyCode.RightArrow },
+            { KeyType.Left, KeyCode.LeftArrow }
+        };
 
         public static Dictionary<KeyType, List<KeyCode>> InputKeyType => inputKeyType;
         /// <summary>
@@ -41,6 +50,10 @@ namespace Contest
             // 指定されたKeyTypeに関連するKeyCodeのリストを取得
             List<KeyCode> keys = inputKeyType[type];
 
+            if (keys == null)
+            {
+                return Input.GetKeyDown(defaultKeyType[type]);
+            }
             // リスト内のすべてのキーに対して、キーが押されたかどうかを確認
             foreach (var key in keys)
             {

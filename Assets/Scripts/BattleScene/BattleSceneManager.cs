@@ -7,8 +7,10 @@ namespace Contest
 {
     public class BattleSceneManager : SingletonBehavior<BattleSceneManager>, IManager
     {
+        [SerializeField] private Transform canvas;
         private Turn currentTurn = Turn.Friend;
         private bool isRunning = false;
+        private IFactoryHolders _factoryHolders;
 
         private List<GameObject> units = new List<GameObject>();
         private List<UnitBase> unitBases = new List<UnitBase>();
@@ -35,12 +37,15 @@ namespace Contest
         public int Friend => friendCount;
         public int Enemy => enemyCount;
 
+        public IFactoryHolders FactoryHolders => _factoryHolders;
+
         /// <summary>
         /// バトルの実行を開始します。
         /// </summary>
         /// <param name="datas">バトルに参加するユニットのGameObjectリスト</param>
-        public void Execute(List<GameObject> datas)
+        public void Execute(List<GameObject> datas, InBattleEvent battleEvent, IFactoryHolders factoryHolders = null)
         {
+            _factoryHolders = factoryHolders ?? new InBattleFactoryHolder(unitBases);
             StartCoroutine(InitializeBattle(datas));
         }
 
@@ -57,22 +62,30 @@ namespace Contest
             {
                 if (obj.TryGetComponent<UnitBase>(out var unitBase))
                 {
+                    Instantiate(obj, new Vector3(0, 0, 0), Quaternion.identity, canvas);
                     units.Add(obj);
                     unitBases.Add(unitBase);
                     ChangeUnitCount(unitBase);
+
+
                 }
                 yield return null; // 各ユニットの初期化間でフレームを分ける場合
             }
-
+            yield return new WaitUntil(() => _factoryHolders.FinishedInit);
             Notify_FinishInitialize();
-
             // ターン管理を開始
             if (!isRunning)
             {
                 StartCoroutine(TurnFlow());
             }
         }
+        public void SortObjects()
+        {
+            foreach (var obj in unitBases)
+            {
 
+            }
+        }
         /// <summary>
         /// ターンフローを管理するコルーチン。
         /// </summary>
@@ -174,7 +187,7 @@ namespace Contest
             {
                 Debug.Log("Battle Ended");
             }
-
+            Debug.Log($"\nfriend:{friendCount}\nenemy:{enemyCount}");
             // 必要に応じてバトル終了後の処理を追加
             // 例: 結果画面の表示、リトライオプションの提供など
         }
@@ -186,11 +199,11 @@ namespace Contest
         /// <param name="count">変更する数（デフォルトは1）</param>
         private void ChangeUnitCount(UnitBase unitBase, int count = 1)
         {
-            if ((unitBase.MyUnitType & (UnitType.Enemy | UnitType.EnemyAI)) != 0)
+            if (FLG.FLGCheck((uint)unitBase.unitData.UnitType, (uint)UnitType.Enemy | (uint)UnitType.EnemyAI))
             {
                 enemyCount += count;
             }
-            else if ((unitBase.MyUnitType & (UnitType.Friend | UnitType.FriendAI)) != 0)
+            else if (FLG.FLGCheck((uint)unitBase.unitData.UnitType, (uint)UnitType.Friend | (uint)UnitType.FriendAI))
             {
                 friendCount += count;
             }
@@ -260,6 +273,30 @@ namespace Contest
                     IsBattleEnd();
                     break; // 一致するユニットが見つかったらループを抜ける
                 }
+            }
+        }
+    }
+
+    public class SortHelper
+    {
+        public List<List<GameObject>> units = new List<List<GameObject>>()
+        {
+            new List<GameObject>(), // 味方
+            new List<GameObject>()  // 敵
+        };
+        public float spacing = 2f;      // オブジェクト間の距離
+        public Vector2 startPoint = new Vector2(-10, -10); // 配置開始位置（左下の座標）
+        public Vector2 areaSize = new Vector2(20, 20); // 配置エリアのサイズ
+
+        void SortingUnits(int num)
+        {
+            for (int i = 0; i < units[num].Count; i++)
+            {
+                // 配置する位置を計算
+                Vector2 position = new Vector2(
+                    startPoint.x,
+                    startPoint.y + (i * spacing)  // Y軸の位置
+                );
             }
         }
     }
