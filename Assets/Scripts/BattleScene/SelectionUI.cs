@@ -5,7 +5,6 @@ namespace Contest
 {
     public class SelectionUI : SingletonBehavior<SelectionUI>
     {
-        [SerializeField] private GameObject selectionPanel;
         [SerializeField] private Button confirmButton;
         [SerializeField] private Button cancelButton;
 
@@ -17,7 +16,6 @@ namespace Contest
             confirmButton.onClick.AddListener(OnConfirm);
             cancelButton.onClick.AddListener(OnCancel);
 
-            Hide(); // 初期状態では非表示
         }
 
         /// <summary>
@@ -25,7 +23,8 @@ namespace Contest
         /// </summary>
         public void Show()
         {
-            selectionPanel.SetActive(true);
+            confirmButton.gameObject.SetActive(true);
+            cancelButton.gameObject.SetActive(true);
         }
 
         /// <summary>
@@ -33,7 +32,8 @@ namespace Contest
         /// </summary>
         public void Hide()
         {
-            selectionPanel.SetActive(false);
+            confirmButton.gameObject.SetActive(false);
+            cancelButton.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Contest
         private void OnConfirm()
         {
             SkillSelectManager.instance.CompleteSelection();
-            Hide();
+            SettingPlayerSkillSelection.instance.CompleteSelection();
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Contest
         private void OnCancel()
         {
             SkillSelectManager.instance.CancelSelection();
-            Hide();
+            SettingPlayerSkillSelection.instance.CancelSelection();
         }
     }
 }

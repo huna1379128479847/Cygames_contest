@@ -5,13 +5,16 @@ using UnityEngine;
 
 namespace Contest
 {
-    // ユニットを表現する基本的なインターフェース。ユニットの種類や行動を定義する。
-    public interface IUnit
+    public interface IName
     {
-        string Name { get; } // ユニットの名前
+        string Name { get; }
+    }
+    // ユニットを表現する基本的なインターフェース。ユニットの種類や行動を定義する。
+    public interface IUnit : IName
+    {
         UnitType MyUnitType { get; } // ユニットの種類
         SkillHandler SkillHandler { get; } // スキルを管理するハンドラー
-        void TurnBehavior(); // ターン中の行動を定義
+        IEnumerator TurnBehavior(); // ターン中の行動を定義
     }
 
     // ユニークな存在を表すインターフェース。各インスタンスに一意のIDを持たせる。
@@ -23,8 +26,8 @@ namespace Contest
     // プレイヤー選択肢を管理するためのインターフェース。選択肢の生成と選択処理を担当。
     public interface IPlayerHandler
     {
-        void GeneratePlayerOptions(); // プレイヤーの選択肢を生成
-        void HandlePlayerSelection(int selectionId); // 選択されたオプションの処理
+        IEnumerator GeneratePlayerOptions(); // プレイヤーの選択肢を生成
+        void HandlePlayerSelection(Skill skill); // 選択されたオプションの処理
     }
 
     // アクションを実行中かどうかを示すインターフェース。アクションの進行状況を管理する。
@@ -55,7 +58,7 @@ namespace Contest
     // システムやシーンの動作を管理するためのインターフェース。実行状態を管理。
     public interface IManager
     {
-        bool IsRunning { get; set; } // システムが稼働中かどうか
+        bool IsRunning { get; } // システムが稼働中かどうか
     }
 
     // シーンを切り替えるためのインターフェース。シーンの遷移を管理。
@@ -75,9 +78,8 @@ namespace Contest
     }
 
     // 効果（バフやデバフなど）を定義するインターフェース。効果の適用や管理を行う。
-    public interface IEffect
+    public interface IEffect : IName
     {
-        string Name { get; } // 効果の名前
         int Duration { get; } // 効果の持続時間
         EffectTiming Timing { get; } // 効果が発動するタイミング
         EffectFlgs Flags { get; } // 効果のフラグ（特徴や条件）
@@ -99,7 +101,7 @@ namespace Contest
     /// キーと対応する型を保持するためのインターフェース。
     /// </summary>
     /// <typeparam name="T">キーの型。参照型でなければなりません。</typeparam>
-    public interface IFactoryHolder<T> where T : class
+    public interface IFactoryHolder<T> where T : IUseCutomClass
     {
         /// <summary>
         /// キーと型の対応を登録します。
@@ -131,11 +133,12 @@ namespace Contest
 
     public interface IFactoryHolders
     {
-        Dictionary<Type, IFactoryHolder<IUseCutomClass>> FactoryHolders { get; }
+        Dictionary<Type, IFactoryHolder<IUseCustamClassData>> FactoryHolders { get; }
 
         bool FinishedInit { get; }
 
-        IFactory GetFactory(IUseCutomClass data);
+        void SetData(List<UnitBase> unitBases);
+        IFactory GetFactory(IUseCustamClassData data);
     }
 
     /// <summary>
@@ -154,5 +157,9 @@ namespace Contest
     public interface IUseCutomClass
     {
         string ClassName { get; }
+    }
+
+    public interface IUseCustamClassData : IUseCutomClass, IName
+    {
     }
 }

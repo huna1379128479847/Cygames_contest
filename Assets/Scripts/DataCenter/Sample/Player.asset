@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db702ff5b6f97f54caca94d383ddf721, type: 3}
+  m_Name: Player
+  m_EditorClassIdentifier: 
+  _name: "\u30D7\u30EC\u30A4\u30E4\u30FC"
+  description: "\u3042\u3042\u3042"
+  hp: 100
+  mp: 100
+  atk: 100
+  def: 100
+  speed: 100
+  unitType: 1
+  skillDatas:
+  - {fileID: 11400000, guid: 4b5ea63f4b0663047a4e12524b0e9b5f, type: 2}
+  - {fileID: 11400000, guid: 4b5ea63f4b0663047a4e12524b0e9b5f, type: 2}
+  - {fileID: 11400000, guid: 4b5ea63f4b0663047a4e12524b0e9b5f, type: 2}

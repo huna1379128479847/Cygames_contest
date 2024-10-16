@@ -43,7 +43,7 @@ namespace Contest
             Parent = parent ?? throw new ArgumentNullException(nameof(parent));
 
             // ユニットデータが存在しない場合、例外をスロー
-            UnitData unitData = parent.unitData;
+            UnitData unitData = parent.UnitData;
             if (unitData == null)
                 throw new InvalidOperationException("UnitData cannot be null");
 
@@ -54,8 +54,8 @@ namespace Contest
             speed = new StatusBase(unitData.Speed);
             atk = new StatusBase(unitData.Atk);
             def = new StatusBase(unitData.Def);
-            hp = new StatusBase(unitData.HP, true);
-            mp = new StatusBase(unitData.MP);
+            hp = new StatusBase(unitData.HP, false);
+            mp = new StatusBase(unitData.MP, false);
         }
     }
 }

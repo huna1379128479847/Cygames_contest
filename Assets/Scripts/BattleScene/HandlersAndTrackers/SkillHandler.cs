@@ -34,39 +34,6 @@ namespace Contest
         public UnitBase Parent => parent;
 
         /// <summary>
-        /// スキルを実行するメソッド。
-        /// </summary>
-        /// <param name="skill">実行するスキル。</param>
-        /// <param name="targets">スキルの対象となるユニットのリスト。</param>
-        public void ExecuteSkill(Skill skill, List<UnitBase> targets)
-        {
-            if (skill != null && skill.CanUse)
-            {
-                skill.InvokeSkill(targets);
-            }
-            else
-            {
-                Debug.Log($"Skill {skill?.skillData.Name ?? "Unknown"} cannot be used.");
-            }
-        }
-
-        /// <summary>
-        /// スキルを設定し、選択状態にする。
-        /// </summary>
-        /// <param name="skill">選択するスキル。</param>
-        public void SetSkill(Skill skill)
-        {
-            if (skills.ContainsKey(skill.ID))
-            {
-                currentSkill = skills[skill.ID]; // 選択されたスキルを現在のスキルに設定
-            }
-            else
-            {
-                Debug.LogError($"Skill with ID {skill.ID} not found.");
-            }
-        }
-
-        /// <summary>
         /// スキルデータのリストからスキルを初期化し、辞書に登録する。
         /// </summary>
         /// <param name="skillDatas">スキルデータのリスト。</param>
@@ -107,26 +74,6 @@ namespace Contest
                 {
                     Debug.LogError("SkillHandler requires a UnitBase component.");
                 }
-            }
-
-            // スキルリストを初期化
-            InitSkillList(parent.unitData.SkillDatas);
-        }
-
-        /// <summary>
-        /// 現在選択されているスキルを実行するメソッド。
-        /// 主に SkillSelectManager から呼び出される。
-        /// </summary>
-        /// <param name="targets">スキルの対象となるユニットのリスト。</param>
-        public void ExecuteCurrentSkill(List<UnitBase> targets)
-        {
-            if (currentSkill != null)
-            {
-                ExecuteSkill(currentSkill, targets);
-            }
-            else
-            {
-                Debug.LogWarning("No skill is currently selected.");
             }
         }
     }

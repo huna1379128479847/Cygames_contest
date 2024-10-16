@@ -5,27 +5,49 @@ using UnityEngine;
 namespace Contest
 {
     // SkillData型のファクトリーを管理するクラス
-    public class SkillRegister : IFactoryHolder<SkillData>
-    {        
-        private static Dictionary<SkillData, IFactory> factoryHolder = new Dictionary<SkillData, IFactory>();
+    public class SkillRegister : IFactoryHolder<IUseCustamClassData>
+    {
+        private static Dictionary<IUseCustamClassData, IFactory> factoryHolder = new Dictionary<IUseCustamClassData, IFactory>();
 
         // SkillDataを登録するメソッド。
         // データがnullでない場合、ClassNameプロパティを使用してクラスをNamespaceHeadと連結して登録
-        public void RegisterFactory(SkillData data)
+        public void RegisterFactory(IUseCustamClassData data)
         {
             if (data.ClassName == null)
             {
-                Debug.LogError($"入力値が不正です{data.Name}");
+                Debug.LogError($"入力値が不正です: ClassNameがnull {data.Name}");
+                return;  // 早期リターン
             }
-            Type type = Type.GetType(data.ClassName + Constants.FactoryPostfix);
-            if (type != null)
+
+            try
             {
-                factoryHolder[data] = Activator.CreateInstance(type) as IFactory;
+                Type type = Type.GetType(Constants.GetFactory(data.ClassName, true));
+                if (type != null)
+                {
+                    var factoryInstance = Activator.CreateInstance(type) as IFactory;
+                    if (factoryInstance != null)
+                    {
+                        factoryHolder[data] = factoryInstance;
+                    }
+                    else
+                    {
+                        Debug.LogError($"Activator.CreateInstance failed: {data.ClassName} に対応するファクトリがnullです");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"Type not found for: {data.ClassName}");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Exception in RegisterFactory: {e.Message} for SkillData: {data.Name}");
             }
         }
 
+
         // SkillDataに対応するTypeを取得するメソッド
-        public IFactory GetFactoryForKey(SkillData data)
+        public IFactory GetFactoryForKey(IUseCustamClassData data)
         {
             if (factoryHolder.TryGetValue(data, out IFactory factory))
             {
@@ -39,7 +61,7 @@ namespace Contest
         }
 
         // SkillDataに対応する型情報を削除するメソッド
-        public bool RemoveFactory(SkillData data)
+        public bool RemoveFactory(IUseCustamClassData data)
         {
             if (factoryHolder.ContainsKey(data))
             {
@@ -49,7 +71,7 @@ namespace Contest
         }
 
         // SkillDataが既に登録されているか確認するメソッド
-        public bool ContainsKey(SkillData data)
+        public bool ContainsKey(IUseCustamClassData data)
         {
             return factoryHolder.ContainsKey(data);
         }

@@ -13,14 +13,6 @@ namespace Contest
 
         public void Start()
         {
-            foreach (GameObject unit in units)
-            {
-                UnitBase unitBase = unit.GetComponent<UnitBase>();
-                foreach(var skill in unitBase.unitData.SkillDatas)
-                {
-                    SkillRegister.Instance.RegisterFactory(skill);
-                }
-            }
             BattleSceneManager.instance.Execute(units, null);
         }
     }

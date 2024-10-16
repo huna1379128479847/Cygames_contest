@@ -30,7 +30,7 @@ namespace Contest
             get
             {
                 // 値に変更があれば再計算する
-                if (isDirty && !needDirty)
+                if (isDirty && needDirty)
                 {
                     RecalculateAmount();
                 }
@@ -64,7 +64,7 @@ namespace Contest
         public Guid ID => id;
 
         // コンストラクタ
-        public StatusBase(int amount, bool needDirty = false)
+        public StatusBase(int amount, bool needDirty = true)
         {
             defaultAmount = amount;
             currentAmount = amount;  // 初期値を設定

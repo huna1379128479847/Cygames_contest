@@ -12,7 +12,7 @@ namespace Contest
     /// 効果の持続時間、数値や倍率、適用タイミングなどの情報を保持する。
     /// </summary>
     [CreateAssetMenu(menuName = "バフデバフ")]
-    public class StatusEffectData : HasTags, IUseCutomClass
+    public class StatusEffectData : HasTags, IUseCustamClassData
     {
         // ステータス効果に対応するカスタムクラス名を設定
         [SerializeField] private string className;

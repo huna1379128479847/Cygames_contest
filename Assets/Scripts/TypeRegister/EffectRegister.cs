@@ -4,19 +4,19 @@ using UnityEngine;
 
 namespace Contest
 {
-    public class EffectRegister : IFactoryHolder<StatusEffectData>
+    public class EffectRegister : IFactoryHolder<IUseCustamClassData>
     {
-        private static Dictionary<StatusEffectData, IFactory> factoryHolder = new Dictionary<StatusEffectData, IFactory>();
+        private static Dictionary<IUseCustamClassData, IFactory> factoryHolder = new Dictionary<IUseCustamClassData, IFactory>();
 
         // SkillDataを登録するメソッド。
         // データがnullでない場合、ClassNameプロパティを使用してクラスをNamespaceHeadと連結して登録
-        public void RegisterFactory(StatusEffectData data)
+        public void RegisterFactory(IUseCustamClassData data)
         {
             if (data.ClassName == null)
             {
                 Debug.LogError($"入力値が不正です{data.Name}");
             }
-            Type type = Type.GetType(data.ClassName);
+            Type type = Type.GetType(Constants.GetFactory(data.ClassName, true));
             if (type != null)
             {
                 factoryHolder[data] = Activator.CreateInstance(type) as IFactory;
@@ -24,7 +24,7 @@ namespace Contest
         }
 
         // SkillDataに対応するTypeを取得するメソッド
-        public IFactory GetFactoryForKey(StatusEffectData data)
+        public IFactory GetFactoryForKey(IUseCustamClassData data)
         {
             if (factoryHolder.TryGetValue(data, out IFactory factory))
             {
@@ -38,7 +38,7 @@ namespace Contest
         }
 
         // SkillDataに対応する型情報を削除するメソッド
-        public bool RemoveFactory(StatusEffectData data)
+        public bool RemoveFactory(IUseCustamClassData data)
         {
             if (factoryHolder.ContainsKey(data))
             {
@@ -48,7 +48,7 @@ namespace Contest
         }
 
         // SkillDataが既に登録されているか確認するメソッド
-        public bool ContainsKey(StatusEffectData data)
+        public bool ContainsKey(IUseCustamClassData data)
         {
             return factoryHolder.ContainsKey(data);
         }

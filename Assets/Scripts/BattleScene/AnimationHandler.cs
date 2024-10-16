@@ -7,7 +7,7 @@ namespace Contest
     {
         public static void InvokeAnimation(GameObject obj, AnimationType type)
         {
-            if (obj == null || !obj.TryGetComponent<Animator>(out Animator animator)) return;
+            if (obj == null || !obj.TryGetComponent(out Animator animator)) return;
             Invoke(animator, type.ToString());
         }
 

@@ -23,6 +23,7 @@ namespace Contest
         // 攻撃者がいるダメージかどうか(持続ダメージなどの場合False)
         public bool isAttack = false;
 
+        public bool isOccurredDamage = true;
 
         /// <summary>
         /// コンストラクタ。ダメージを与えるユニット、受けるユニットを指定して初期化する。

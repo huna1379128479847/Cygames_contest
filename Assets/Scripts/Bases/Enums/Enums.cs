@@ -102,22 +102,60 @@ namespace Contest
         All = 1 << 5,       // 全て
         Random = 1 << 6,    // ランダム
         Select = 1 << 7,    // 選択
+        Self = 1 << 8,
     }
 
-    // エフェクトの種類を定義。ビジュアルエフェクトとしてスタンやハイライトを示す。
+    /// <summary>
+    /// エフェクトの種類を定義します。ビジュアルエフェクトとしてスタンやハイライトを示します。
+    /// </summary>
     public enum ParticleType
     {
-        HighLight,  // ハイライト
+        /// <summary>
+        /// ハイライトエフェクト
+        /// </summary>
+        Highlight,  // ハイライト
+
+        /// <summary>
+        /// スタンエフェクト
+        /// </summary>
         Stun,       // スタン
+
+        /// <summary>
+        /// その他のエフェクト
+        /// </summary>
+        Other       // その他
     }
 
-    // アニメーションオプションを定義。アニメーションの挙動をフラグで管理。
+    /// <summary>
+    /// アニメーションオプションを定義します。アニメーションの挙動をフラグで管理します。
+    /// </summary>
     [Flags]
     public enum AnimationOptions
     {
+        /// <summary>
+        /// アニメーションオプションなし
+        /// </summary>
         None = 0,           // なし
+
+        /// <summary>
+        /// 大きさを合わせるオプション
+        /// </summary>
         Fitting = 1 << 0,   // 大きさを合わせる
+
+        /// <summary>
+        /// 一度のみ再生するオプション
+        /// </summary>
         Once = 1 << 1,      // 一度のみ再生
+
+        /// <summary>
+        /// ループ再生するオプション
+        /// </summary>
+        Loop = 1 << 2,      // ループ再生
+
+        /// <summary>
+        /// 遅延開始オプション
+        /// </summary>
+        DelayedStart = 1 << 3, // 遅延開始
     }
 
     /// <summary>
@@ -137,5 +175,14 @@ namespace Contest
         NeedTags,           // 特定のタグが必要
         UpToParam,          // パラメータが上限まで
         DownToParam,        // パラメータが下限まで
+    }
+
+    public enum MiniGameResult
+    {
+        Poor,
+        Bad,
+        Normal,
+        Great,
+        Perfect,
     }
 }

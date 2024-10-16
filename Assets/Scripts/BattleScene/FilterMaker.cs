@@ -32,20 +32,20 @@ namespace Contest
                 Debug.LogError($"{skillFilter.Name}にタグが設定されていません。");
                 return true;
             }
-            EffectHandler handler = unit.effectHandler;
+            EffectHandler handler = unit.EffectHandler;
             foreach (var tag in skillFilter.NeedTags)
             {
                 string[] item = tag.Split(".");
                 if (item[0] == "ユニット")
                 {
-                    if (!unit.unitData.HasTag(item[1]))
+                    if (!unit.UnitData.HasTag(item[1]))
                     {
                         return false;
                     }
                 }
                 else if (item[0] == "エフェクト")
                 {
-                    if (unit.effectHandler.GetFirstEffect(item[1]) != null)
+                    if (unit.EffectHandler.GetFirstEffect(item[1]) != null)
                     {
                         return true;
                     }
@@ -61,7 +61,7 @@ namespace Contest
 
         private bool CheckParam(UnitBase unit)
         {
-            PropertyInfo info = unit.statusTracker.GetType().GetProperty(skillFilter.Param);
+            PropertyInfo info = unit.StatusTracker.GetType().GetProperty(skillFilter.Param);
             StatusBase status = info?.GetValue(unit) as StatusBase;
             if (info == null || status == null)
             {

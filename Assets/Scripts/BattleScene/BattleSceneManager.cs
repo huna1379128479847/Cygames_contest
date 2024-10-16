@@ -2,40 +2,49 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Contest
 {
     public class BattleSceneManager : SingletonBehavior<BattleSceneManager>, IManager
     {
-        [SerializeField] private Transform canvas;
-        private Turn currentTurn = Turn.Friend;
-        private bool isRunning = false;
+        // デバッグ用 フィールド
+        private int turnCount = 0;
+
+        // フィールド
+        [SerializeField] private Transform _canvas;
+        [SerializeField] private Transform _playerFrame;
+        [SerializeField] private Transform _enemiesFrame;
+
+        private Turn _currentTurn = Turn.Friend;
+        private bool _isRunning = false;
         private IFactoryHolders _factoryHolders;
 
-        private List<GameObject> units = new List<GameObject>();
-        private List<UnitBase> unitBases = new List<UnitBase>();
+        private readonly List<GameObject> _units = new List<GameObject>();
+        private readonly List<UnitBase> _unitBases = new List<UnitBase>();
 
-        private int friendCount = 0;
-        private int enemyCount = 0;
+        private int _friendCount = 0;
+        private int _enemyCount = 0;
 
-        public virtual bool IsRunning
+        public bool IsRunning
         {
-            get => isRunning;
-            set
+            get => _isRunning;
+            private set
             {
-                if (isRunning != value)
+                if (_isRunning != value)
                 {
-                    isRunning = value;
+                    _isRunning = value;
+                    // 必要に応じてイベントを追加
                 }
             }
         }
 
-        public bool InAction => unitBases.Count > 0 && unitBases[0].InAction;
+        public bool InAction => _unitBases.Count > 0 && _unitBases[0].InAction;
         public bool InSelecting => SkillSelectManager.instance.InSelecting;
-        public Turn Turn => currentTurn;
-        public List<UnitBase> AllUnit => unitBases;
-        public int Friend => friendCount;
-        public int Enemy => enemyCount;
+        public Turn CurrentTurn => _currentTurn;
+        public IReadOnlyList<UnitBase> AllUnits => _unitBases.AsReadOnly();
+        public int FriendCount => _friendCount;
+        public int EnemyCount => _enemyCount;
 
         public IFactoryHolders FactoryHolders => _factoryHolders;
 
@@ -43,49 +52,54 @@ namespace Contest
         /// バトルの実行を開始します。
         /// </summary>
         /// <param name="datas">バトルに参加するユニットのGameObjectリスト</param>
+        /// <param name="battleEvent">バトルイベント</param>
+        /// <param name="factoryHolders">ファクトリーホルダー</param>
         public void Execute(List<GameObject> datas, InBattleEvent battleEvent, IFactoryHolders factoryHolders = null)
         {
-            _factoryHolders = factoryHolders ?? new InBattleFactoryHolder(unitBases);
-            StartCoroutine(InitializeBattle(datas));
+            _factoryHolders = factoryHolders ?? new InBattleFactoryHolder();
+            InitializeBattle(datas);
         }
 
         /// <summary>
-        /// バトルの初期化を行うコルーチン。
+        /// バトルの初期化を行う。
         /// </summary>
         /// <param name="datas">バトルに参加するユニットのGameObjectリスト</param>
-        /// <returns></returns>
-        private IEnumerator InitializeBattle(List<GameObject> datas)
+        private void InitializeBattle(List<GameObject> datas)
         {
+            turnCount = 1;
             Notify_StartInitialize();
 
             foreach (var obj in datas)
             {
-                if (obj.TryGetComponent<UnitBase>(out var unitBase))
+                var instantiatedObj = Instantiate(obj, Vector3.zero, Quaternion.identity, _canvas);
+                if (instantiatedObj.TryGetComponent<UnitBase>(out var unitBase))
                 {
-                    Instantiate(obj, new Vector3(0, 0, 0), Quaternion.identity, canvas);
-                    units.Add(obj);
-                    unitBases.Add(unitBase);
+                    _units.Add(instantiatedObj);
+                    _unitBases.Add(unitBase);
                     ChangeUnitCount(unitBase);
-
-
                 }
-                yield return null; // 各ユニットの初期化間でフレームを分ける場合
+                else
+                {
+                    Destroy(instantiatedObj);
+                    Debug.LogError("UnitBaseがアタッチされていないGameObjectが存在します");
+                }
             }
-            yield return new WaitUntil(() => _factoryHolders.FinishedInit);
+
+            _factoryHolders.SetData(_unitBases);
+            foreach (var unit in _unitBases)
+            {
+                unit.InitUnit();
+            }
+
             Notify_FinishInitialize();
+
             // ターン管理を開始
-            if (!isRunning)
+            if (!IsRunning)
             {
                 StartCoroutine(TurnFlow());
             }
         }
-        public void SortObjects()
-        {
-            foreach (var obj in unitBases)
-            {
 
-            }
-        }
         /// <summary>
         /// ターンフローを管理するコルーチン。
         /// </summary>
@@ -94,12 +108,13 @@ namespace Contest
         {
             IsRunning = true;
 
-            while (friendCount > 0 && enemyCount > 0)
+            while (_friendCount > 0 && _enemyCount > 0)
             {
                 // 各ユニットの行動を順番に処理
-                foreach (var unit in unitBases.ToArray()) // ToArray() でコレクション変更時のエラーを防ぐ
+                for (int i = 0; i < _unitBases.Count; i++)
                 {
-                    if (unit == null || !FLG.FLGCheck((uint)unit.MyUnitType, (uint)currentTurn))
+                    var unit = _unitBases[i];
+                    if (unit == null || !FLG.FLGCheckHaving((uint)unit.MyUnitType, (uint)_currentTurn))
                     {
                         continue;
                     }
@@ -107,14 +122,14 @@ namespace Contest
                     yield return StartCoroutine(HandleUnitAction(unit));
 
                     // バトル終了の可能性をチェック
-                    if (friendCount <= 0 || enemyCount <= 0)
+                    if (_friendCount <= 0 || _enemyCount <= 0)
                     {
                         break;
                     }
                 }
 
                 // ターン終了後にターンを切り替え
-                TurnChange();
+                ChangeTurn();
                 yield return null; // 次のターンへ移行する前にフレームを分ける
             }
 
@@ -136,38 +151,37 @@ namespace Contest
 
             bool actionCompleted = false;
 
-            // イベントハンドラーの定義
             void OnActionCompleteHandler()
             {
                 actionCompleted = true;
             }
 
-            // イベントにハンドラーを登録
             unit.OnActionComplete += OnActionCompleteHandler;
 
-            // ユニットのターンを開始
+            if (!unit.gameObject.activeInHierarchy)
+            {
+                unit.gameObject.SetActive(true);
+            }
+
             unit.EnterTurn();
 
-            // アクションが完了するまで待機
             while (!actionCompleted)
             {
                 yield return null;
             }
 
-            // イベントハンドラーを解除
             unit.OnActionComplete -= OnActionCompleteHandler;
-
-            // ユニットのターンを終了
             unit.ExitTurn();
         }
 
         /// <summary>
         /// ターンを切り替えます（友軍 ⇄ 敵軍）。
         /// </summary>
-        private void TurnChange()
+        private void ChangeTurn()
         {
-            currentTurn ^= Turn.All; // 味方と敵のターンを切り替え
-            Debug.Log($"Turn changed to: {currentTurn}");
+            _currentTurn ^= Turn.All; // 味方と敵のターンを切り替え
+            Debug.Log($"{turnCount}, Turn changed to: {_currentTurn}");
+            turnCount++;
         }
 
         /// <summary>
@@ -175,11 +189,11 @@ namespace Contest
         /// </summary>
         private void EndBattle()
         {
-            if (friendCount > 0 && enemyCount <= 0)
+            if (_friendCount > 0 && _enemyCount <= 0)
             {
                 Debug.Log("Friends Win!");
             }
-            else if (enemyCount > 0 && friendCount <= 0)
+            else if (_enemyCount > 0 && _friendCount <= 0)
             {
                 Debug.Log("Enemies Win!");
             }
@@ -187,7 +201,8 @@ namespace Contest
             {
                 Debug.Log("Battle Ended");
             }
-            Debug.Log($"\nfriend:{friendCount}\nenemy:{enemyCount}");
+            Debug.Log($"\nfriend: {_friendCount}\nenemy: {_enemyCount}");
+
             // 必要に応じてバトル終了後の処理を追加
             // 例: 結果画面の表示、リトライオプションの提供など
         }
@@ -199,22 +214,29 @@ namespace Contest
         /// <param name="count">変更する数（デフォルトは1）</param>
         private void ChangeUnitCount(UnitBase unitBase, int count = 1)
         {
-            if (FLG.FLGCheck((uint)unitBase.unitData.UnitType, (uint)UnitType.Enemy | (uint)UnitType.EnemyAI))
+            if (FLG.FLGCheckHaving((uint)unitBase.UnitData.UnitType, (uint)(UnitType.Enemy | UnitType.EnemyAI)))
             {
-                enemyCount += count;
+                _enemyCount += count;
+                unitBase.transform.SetParent(_enemiesFrame);
             }
-            else if (FLG.FLGCheck((uint)unitBase.unitData.UnitType, (uint)UnitType.Friend | (uint)UnitType.FriendAI))
+            else if (FLG.FLGCheckHaving((uint)unitBase.UnitData.UnitType, (uint)(UnitType.Friend | UnitType.FriendAI)))
             {
-                friendCount += count;
+                _friendCount += count;
+                unitBase.transform.SetParent(_playerFrame);
+                unitBase.transform.position = _playerFrame.position;
+            }
+            else
+            {
+                Debug.LogWarning($"Unknown UnitType: {unitBase.UnitData.UnitType}");
             }
         }
 
         /// <summary>
         /// バトルが終了しているかをチェックし、必要な処理を行います。
         /// </summary>
-        private void IsBattleEnd()
+        private void CheckBattleEnd()
         {
-            if (friendCount <= 0 || enemyCount <= 0)
+            if (_friendCount <= 0 || _enemyCount <= 0)
             {
                 IsRunning = false;
                 StopAllCoroutines();
@@ -227,8 +249,7 @@ namespace Contest
         /// </summary>
         public void Notify_EndUnitAction()
         {
-            // 現在の実装では不要ですが、将来的な拡張のために残しておきます。
-            // 必要に応じて実装を追加してください。
+            // 将来的な拡張のために保持
         }
 
         /// <summary>
@@ -236,8 +257,8 @@ namespace Contest
         /// </summary>
         protected virtual void Notify_StartInitialize()
         {
-            // 初期化開始時の処理をここに追加
             Debug.Log("Battle Initialization Started.");
+            // 初期化開始時の処理をここに追加
         }
 
         /// <summary>
@@ -245,58 +266,33 @@ namespace Contest
         /// </summary>
         protected virtual void Notify_FinishInitialize()
         {
-            // 初期化完了時の処理をここに追加
             Debug.Log("Battle Initialization Finished.");
+            // 初期化完了時の処理をここに追加
         }
 
         /// <summary>
         /// ユニットをバトルから削除します。
         /// </summary>
         /// <param name="id">削除するユニットのID</param>
-        public virtual void RemoveUnit(Guid id)
+        public void RemoveUnit(Guid id)
         {
-            for (int i = 0; i < unitBases.Count; i++)
+            int index = _unitBases.FindIndex(unit => unit.ID == id);
+            if (index != -1)
             {
-                if (unitBases[i].ID == id)
-                {
-                    // カウントを減らす
-                    ChangeUnitCount(unitBases[i], -1);
+                var unit = _unitBases[index];
+                ChangeUnitCount(unit, -1);
 
-                    // ユニットとGameObjectをリストから削除
-                    unitBases.RemoveAt(i);
-                    Destroy(units[i]);
-                    units.RemoveAt(i);
+                Destroy(_units[index]);
+                _units.RemoveAt(index);
+                _unitBases.RemoveAt(index);
 
-                    Debug.Log($"Unit {id} removed from battle.");
+                Debug.Log($"Unit {id} removed from battle.");
 
-                    // バトル終了の可能性をチェック
-                    IsBattleEnd();
-                    break; // 一致するユニットが見つかったらループを抜ける
-                }
+                CheckBattleEnd();
             }
-        }
-    }
-
-    public class SortHelper
-    {
-        public List<List<GameObject>> units = new List<List<GameObject>>()
-        {
-            new List<GameObject>(), // 味方
-            new List<GameObject>()  // 敵
-        };
-        public float spacing = 2f;      // オブジェクト間の距離
-        public Vector2 startPoint = new Vector2(-10, -10); // 配置開始位置（左下の座標）
-        public Vector2 areaSize = new Vector2(20, 20); // 配置エリアのサイズ
-
-        void SortingUnits(int num)
-        {
-            for (int i = 0; i < units[num].Count; i++)
+            else
             {
-                // 配置する位置を計算
-                Vector2 position = new Vector2(
-                    startPoint.x,
-                    startPoint.y + (i * spacing)  // Y軸の位置
-                );
+                Debug.LogWarning($"Unit with ID {id} not found.");
             }
         }
     }

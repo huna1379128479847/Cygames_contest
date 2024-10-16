@@ -83,5 +83,25 @@ namespace Contest
             return flg ^ checkFlg;  // 指定したフラグをトグルする
         }
 
+        public static List<TEnum> FLGSeparator<TEnum>(uint flg) where TEnum : Enum
+        {
+            List<TEnum> enums = new List<TEnum>();
+            int i = 0;
+
+            // Enumのビットフラグに沿って処理
+            while (flg != 0)
+            {
+                uint mask = (uint)(1 << i);  // iビット目のフラグ
+                if (FLGCheck(flg, mask))
+                {
+                    enums.Add((TEnum)Enum.ToObject(typeof(TEnum), mask));
+                    flg = FLGDown(flg, mask); // フラグを降ろす（bitをオフにする）
+                }
+                i++;
+            }
+
+            return enums;
+        }
+
     }
 }

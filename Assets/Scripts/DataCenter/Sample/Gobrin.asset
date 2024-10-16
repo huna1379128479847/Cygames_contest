@@ -14,15 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: "\u30B4\u30D6\u30EA\u30F3"
   description: "\u96D1\u9B5A"
-  tags:
-  - "\u30D5\u30A1\u30F3\u30BF\u30B8\u30FC"
-  - "\u30E2\u30F3\u30B9\u30BF\u30FC"
   hp: 106
   mp: 5
   atk: 23
   def: 12
   speed: 100
-  unitType: 2
+  unitType: 8
   skillDatas:
   - {fileID: 11400000, guid: 4b5ea63f4b0663047a4e12524b0e9b5f, type: 2}
+  - {fileID: 11400000, guid: 77381d1867f15e44aa71c976cc00784c, type: 2}
+  - {fileID: 11400000, guid: 271546f033c1f5b4cbda61a8b269a2ed, type: 2}
   enemyPattern: 0

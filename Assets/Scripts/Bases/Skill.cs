@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Contest
@@ -28,6 +29,8 @@ namespace Contest
         //
         public List<DamageInfo> currentResult = new List<DamageInfo>();
 
+        public MiniGameResult currentMiniGameResult = MiniGameResult.Normal;
+
         // スキルのユニークIDを返すプロパティ
         public Guid ID => id;
 
@@ -49,7 +52,7 @@ namespace Contest
         {
             get
             {
-                return parent.Parent.statusTracker.CurrentMP.CurrentAmount >= skillData.Cost;
+                return parent.Parent.StatusTracker.CurrentMP.CurrentAmount >= skillData.Cost;
             }
         }
 
@@ -61,7 +64,8 @@ namespace Contest
             get
             {
                 float variation = UnityEngine.Random.Range(0.9f, 1.1f); // 90%～110%の範囲でダメージが変動
-                return (int)((skillData.Amount + parent.Parent.statusTracker.Atk.CurrentAmount * skillData.Magnification) * variation);
+                int amount = (int)((skillData.Amount + parent.Parent.StatusTracker.Atk.CurrentAmount * skillData.Magnification) * variation);
+                return FLG.FLGCheckHaving((uint)skillData.DamageOptions ,(uint)DamageOptions.IsHeal) ? amount *= -1 : amount;
             }
         }
 
@@ -120,7 +124,9 @@ namespace Contest
             currentResult = null;
 
             // MPを消費
-            parent.Parent.statusTracker.CurrentMP.CurrentAmount -= skillData.Cost;
+            StatusBase mp = parent.Parent.StatusTracker.CurrentMP;
+            mp.CurrentAmount -= skillData.Cost;
+            Debug.Log($"{parent.Parent.Name} : MPを消費：{mp.DefaultAmount}/{mp.CurrentAmount}");
 
             // スキル発動時のアニメーションを実行
             AnimationHandler.InvokeAnimation(parent.Parent.gameObject, skillData.AnimationType);
@@ -128,8 +134,9 @@ namespace Contest
             // アニメーションの再生時間を待機（例: スキルデータに持たせる）
             yield return new WaitForSeconds(2.0f);
 
+            //yield return ExecuteSkillCoroutine(targets);
             // スキルの効果を適用
-            currentResult = ApplySkill(targets);
+            currentResult = ApplySkill(targets, currentMiniGameResult);
 
             // エフェクト処理が必要な場合、ここに追加
             // 例: エフェクトの再生、パーティクルの生成など
@@ -138,16 +145,26 @@ namespace Contest
             EndAction();
 
             // アクション完了を通知
-            parent.Parent.Notify_ActionComplete();
+            parent.Parent.NotifyActionComplete();
 
             yield break;
         }
 
         /// <summary>
+        /// ここにミニゲームとの連絡を記述する
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerator MiniGameActivator()
+        {
+            yield return null;
+
+            // currentMiniGameResult;
+        }
+        /// <summary>
         /// スキルを対象のユニットに対して発動するメソッド。
         /// </summary>
         /// <param name="units">対象となるユニットのリスト。</param>
-        public virtual List<DamageInfo> ApplySkill(List<UnitBase> units)
+        public virtual List<DamageInfo> ApplySkill(List<UnitBase> units, MiniGameResult result)
         {
             if (units == null || units.Count == 0) { return null; }
             List<DamageInfo> infos = new List<DamageInfo>();
@@ -188,7 +205,7 @@ namespace Contest
                 // 固定ダメージや防御貫通スキルではない場合、防御力による減衰を計算
                 if (!FLG.FLGCheck((uint)options, (uint)DamageOptions.IsPanetraitDefance))
                 {
-                    finalDamage = Mathf.Clamp(finalDamage - target.statusTracker.Def.CurrentAmount / 2, DamageAmount / 7, 99999);
+                    finalDamage = Mathf.Clamp(finalDamage - target.StatusTracker.Def.CurrentAmount / 2, DamageAmount / 7, 99999);
                 }
             }
             // このスキルがダメージスキルの場合、負の値へ反転

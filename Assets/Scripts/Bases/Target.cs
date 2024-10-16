@@ -16,9 +16,9 @@ namespace Contest
         /// </summary>
         /// <param name="unit">判別対象のユニット。</param>
         /// <returns>敵であればtrue、そうでなければfalse。</returns>
-        public static bool IsEnemy(UnitBase unit)
+        public static bool IsEnemy(UnitBase unit, Skill skill)
         {
-            return FLG.FLGCheck((uint)unit.MyUnitType, (uint)(UnitType.Enemy | UnitType.EnemyAI));
+            return FLG.FLGCheckHaving((uint)unit.MyUnitType, (uint)(UnitType.Enemy | UnitType.EnemyAI));
         }
 
         /// <summary>
@@ -26,9 +26,9 @@ namespace Contest
         /// </summary>
         /// <param name="unit">判別対象のユニット。</param>
         /// <returns>味方であればtrue、そうでなければfalse。</returns>
-        public static bool IsFriend(UnitBase unit)
+        public static bool IsFriend(UnitBase unit, Skill skill)
         {
-            return FLG.FLGCheck((uint)unit.MyUnitType, (uint)(UnitType.Friend | UnitType.FriendAI));
+            return FLG.FLGCheckHaving((uint)unit.MyUnitType, (uint)(UnitType.Friend | UnitType.FriendAI));
         }
 
         /// <summary>
@@ -36,9 +36,9 @@ namespace Contest
         /// </summary>
         /// <param name="unit">判別対象のユニット。</param>
         /// <returns>AIであればtrue、そうでなければfalse。</returns>
-        public static bool IsAI(UnitBase unit)
+        public static bool IsAI(UnitBase unit, Skill skill)
         {
-            return FLG.FLGCheck((uint)unit.MyUnitType, (uint)(UnitType.FriendAI | UnitType.EnemyAI));
+            return FLG.FLGCheckHaving((uint)unit.MyUnitType, (uint)(UnitType.FriendAI | UnitType.EnemyAI));
         }
 
         /// <summary>
@@ -46,9 +46,9 @@ namespace Contest
         /// </summary>
         /// <param name="unit">判別対象のユニット。</param>
         /// <returns>人間操作であればtrue、そうでなければfalse。</returns>
-        public static bool IsHuman(UnitBase unit)
+        public static bool IsHuman(UnitBase unit, Skill skill)
         {
-            return FLG.FLGCheck((uint)unit.MyUnitType, (uint)(UnitType.Friend | UnitType.Enemy));
+            return FLG.FLGCheckHaving((uint)unit.MyUnitType, (uint)(UnitType.Friend | UnitType.Enemy));
         }
 
         /// <summary>
@@ -56,9 +56,14 @@ namespace Contest
         /// </summary>
         /// <param name="unit">判別対象のユニット。</param>
         /// <returns>満タンでなければtrue、満タンならfalse。</returns>
-        public static bool NotFullHP(UnitBase unit)
+        public static bool NotFullHP(UnitBase unit, Skill skill)
         {
-            return unit.statusTracker.CurrentHP.CurrentAmount != unit.statusTracker.MaxHP.CurrentAmount;
+            return unit.StatusTracker.CurrentHP.CurrentAmount != unit.StatusTracker.MaxHP.CurrentAmount;
+        }
+
+        public static bool SelfTarget(UnitBase unit, Skill skill)
+        {
+            return unit == skill.parent.Parent;
         }
     }
 }
