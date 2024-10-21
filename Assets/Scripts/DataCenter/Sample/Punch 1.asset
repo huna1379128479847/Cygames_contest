@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "\u30D1\u30F3\u30C1"
   className: FireBall
   cost: 1
-  amount: 20
+  amount: 42
   magnification: 0.02
   isAttack: 1
   isBad: 1

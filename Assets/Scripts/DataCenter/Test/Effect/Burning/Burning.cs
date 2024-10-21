@@ -43,9 +43,11 @@ namespace Contest
         }
         public override void ExecuteEffect()
         {
-            DamageInfo info = new DamageInfo(null, parent, DamageOptions.IsDamage | DamageOptions.IsFix | DamageOptions.IsDot);
-            info.amount = Math.Clamp((int)(Data.Magnification * hp.CurrentAmount), 1, 100);
-            parent.TakeDamage(info);
+            DamageInfo info = new DamageInfo(this, null, parent, DamageOptions.IsDamage | DamageOptions.IsFix | DamageOptions.IsDot)
+            {
+                amount = Math.Clamp((int)(Data.Magnification * hp.CurrentAmount), 1, 100)
+            };
+            BattleSceneManager.instance.ApplyDamageInfo(info);
         }
     }
 }

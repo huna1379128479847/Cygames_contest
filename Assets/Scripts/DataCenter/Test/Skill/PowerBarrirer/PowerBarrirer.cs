@@ -18,7 +18,7 @@ namespace Contest
             UnitBase unit = parent.Parent;
             List<DamageInfo> infos = new List<DamageInfo>();
             unit.StatusTracker.Def.AddStackedEffect(new Guid(), skillData.Amount, count, maxCount);
-            DamageInfo info = new DamageInfo(unit, unit);
+            DamageInfo info = new DamageInfo(this, unit, unit);
             info.isOccurredDamage = false;
             infos.Add(info);
             count++;

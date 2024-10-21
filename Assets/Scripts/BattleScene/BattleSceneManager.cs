@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 namespace Contest
 {
@@ -22,9 +23,14 @@ namespace Contest
 
         private readonly List<GameObject> _units = new List<GameObject>();
         private readonly List<UnitBase> _unitBases = new List<UnitBase>();
+        private List<InBattleEvent> _battleEvent = new List<InBattleEvent>();
 
         private int _friendCount = 0;
         private int _enemyCount = 0;
+
+        // イベント
+        public delegate void OnDamage(DamageInfo info);
+        public event OnDamage OnDamageEvent;
 
         public bool IsRunning
         {
@@ -54,9 +60,10 @@ namespace Contest
         /// <param name="datas">バトルに参加するユニットのGameObjectリスト</param>
         /// <param name="battleEvent">バトルイベント</param>
         /// <param name="factoryHolders">ファクトリーホルダー</param>
-        public void Execute(List<GameObject> datas, InBattleEvent battleEvent, IFactoryHolders factoryHolders = null)
+        public void Execute(List<GameObject> datas, List<InBattleEvent> battleEvent, IFactoryHolders factoryHolders = null)
         {
             _factoryHolders = factoryHolders ?? new InBattleFactoryHolder();
+            _battleEvent = battleEvent;
             InitializeBattle(datas);
         }
 
@@ -88,7 +95,7 @@ namespace Contest
             _factoryHolders.SetData(_unitBases);
             foreach (var unit in _unitBases)
             {
-                unit.InitUnit();
+                unit.InitUnit(this);
             }
 
             Notify_FinishInitialize();
@@ -252,6 +259,11 @@ namespace Contest
             // 将来的な拡張のために保持
         }
 
+        public void ApplyDamageInfo(DamageInfo info)
+        {
+            OnDamageEvent?.Invoke(info);
+            info.damageTaker.TakeDamage(info);
+        }
         /// <summary>
         /// バトルの初期化が開始された際に呼び出されます。
         /// </summary>

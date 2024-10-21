@@ -8,6 +8,8 @@ namespace Contest
     /// </summary>
     public class DamageInfo
     {
+        // 
+        public IUniqueThing source;
         // ダメージを与えるユニット
         public UnitBase damageWorker;
         // ダメージを受けるユニット
@@ -30,10 +32,19 @@ namespace Contest
         /// </summary>
         /// <param name="damageWorker">ダメージを与えるユニット。</param>
         /// <param name="damageTaker">ダメージを受けるユニット。</param>
-        public DamageInfo(UnitBase damageWorker, UnitBase damageTaker, DamageOptions damageOptions = DamageOptions.None)
+        public DamageInfo(IUniqueThing source,UnitBase damageWorker, UnitBase damageTaker, DamageOptions damageOptions = DamageOptions.None)
         {
+            this.source = source;
             this.damageWorker = damageWorker;
-            this.damageTaker = damageTaker;
+            if (damageTaker == null)
+            {
+                damageTaker = damageWorker;
+            }
+            else
+            {
+                this.damageTaker = damageTaker;
+            }
+
         }
     }
 }

@@ -16,7 +16,9 @@ namespace Contest
         // インスペクターからアタッチするデータ
         [SerializeField] private UnitData _unitData; // ユニットのデータ (ステータスやスキル)
         [HideInInspector] public EffectHandler EffectHandler { get; private set; } // 効果管理 (バフ・デバフの処理)
-        public StatusTracker StatusTracker { get; private set; } // ステータス管理 (HP、MPの管理)
+        [HideInInspector]public StatusTracker StatusTracker { get; private set; } // ステータス管理 (HP、MPの管理)
+
+        [HideInInspector]public BattleSceneManager BattleSceneManager { get; private set; }
 
         // ユニークID
         private Guid _id;
@@ -116,11 +118,12 @@ namespace Contest
         /// <summary>
         /// ユニットの初期化処理。
         /// </summary>
-        public virtual void InitUnit()
+        public virtual void InitUnit(BattleSceneManager battleSceneManager)
         {
             _id = Guid.NewGuid();
             StatusTracker = new StatusTracker(this);
             StatusTracker.CurrentHP.OnDeadEvent += DeadBehavior;
+            BattleSceneManager = battleSceneManager;
 
             EffectHandler = GetComponent<EffectHandler>();
             if (EffectHandler == null)
@@ -201,9 +204,9 @@ namespace Contest
         /// </summary>
         public virtual void DeadBehavior()
         {
-            if (BattleSceneManager.instance != null)
+            if (BattleSceneManager != null)
             {
-                BattleSceneManager.instance.RemoveUnit(ID);
+                BattleSceneManager.RemoveUnit(ID);
             }
             // 必要に応じて死亡アニメーションやUIの更新を行います。
             gameObject.SetActive(false);
@@ -245,8 +248,7 @@ namespace Contest
         /// ユニットがダメージを受ける処理。
         /// </summary>
         /// <param name="info">ダメージ情報。</param>
-        /// <param name="isFixedDamage">固定ダメージかどうか。</param>
-        public virtual void TakeDamage(DamageInfo info, bool isFixedDamage = false)
+        public virtual void TakeDamage(DamageInfo info)
         {
             if (info == null)
             {

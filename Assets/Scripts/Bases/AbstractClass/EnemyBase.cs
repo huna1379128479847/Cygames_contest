@@ -23,9 +23,9 @@ namespace Contest
         /// <summary>
         /// ユニットの初期化処理を行います。
         /// </summary>
-        public override void InitUnit()
+        public override void InitUnit(BattleSceneManager battleSceneManager)
         {
-            base.InitUnit();
+            base.InitUnit(battleSceneManager);
             if (Helpers.TryChangeType(UnitData, out Enemy enemy))
             {
                 _behaviorPattern = enemy.EnemyPattern;

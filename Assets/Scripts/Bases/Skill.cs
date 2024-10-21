@@ -173,11 +173,11 @@ namespace Contest
             {
                 if (unit != null)
                 {
-                    DamageInfo info = new DamageInfo(parent.Parent, unit, skillData.DamageOptions);
+                    DamageInfo info = new DamageInfo(this ,parent.Parent, unit, skillData.DamageOptions);
                     CalculationDamage(unit, ref info);
                     // 各ユニットに対してダメージを与える
                     infos.Add(info);
-                    unit.TakeDamage(info);
+                    parent.Parent.BattleSceneManager.ApplyDamageInfo(info);
                 }
             }
             return infos;
